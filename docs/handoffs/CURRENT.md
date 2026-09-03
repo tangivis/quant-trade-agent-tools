@@ -11,8 +11,9 @@
   is authorized by this handoff.
 - The public GitHub repository uses the package-aligned name. Sanitized `main` and
   `feature/conversation-context-contract` histories plus public PR #1 exist without mirrored internal refs.
-- A credential-free, pinned-action public CI workflow is under review on that PR. Merge, tag, registry
-  publication and deployment remain unauthorized.
+- The credential-free, Node 24-native pinned-action public `verify` workflow passed on PR #1 and is a
+  required, strict check on protected `main`. Merge, tag, registry publication and deployment remain
+  unauthorized.
 
 ## Current contract
 
@@ -47,7 +48,6 @@
 
 ## Remaining delivery steps
 
-- Run the new public workflow successfully and require its `verify` check on protected `main`.
 - Obtain review before merging public PR #1. Do not merge, tag, publish or deploy from this handoff.
 
 ## Full verification
@@ -58,3 +58,5 @@
 - Python sdist/wheel and both npm dry-run packages built at `0.4.0`.
 - An isolated wheel execution returned `agent-tools 0.4.0`; public documentation and release metadata tests
   passed 15/15.
+- Public GitHub `verify` passed all credential-free gates with no action-runtime warning; protected `main`
+  requires that check, one approving review and resolved conversations.

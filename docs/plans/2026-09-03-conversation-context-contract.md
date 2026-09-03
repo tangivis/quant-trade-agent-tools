@@ -58,3 +58,6 @@
   only four allowlisted entries and no workspace runtime dependency.
 - Bun audited 247 packages with no known vulnerability; pip-audit found no vulnerable resolved dependency
   and skipped only this not-yet-published project identity; Bandit passed.
+- Public GitHub `verify` passed the locked test/lint/typecheck/build/package workflow without provider or
+  registry credentials and without action-runtime warnings. Protected `main` now requires that strict
+  check in addition to review and conversation resolution.

@@ -40,6 +40,7 @@ full TypeScript: 40 passed
 Ruff/typecheck/build/wheel isolated smoke/npm dry-run/security audits: passed
 public CI static contract: RED missing workflow and legacy Node action revisions; GREEN 13 release metadata
 tests passed
+public GitHub PR verify: passed without action-runtime warnings; protected main requires this strict check
 ```
 
 ## Rollout and rollback

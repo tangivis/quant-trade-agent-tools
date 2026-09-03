@@ -15,6 +15,8 @@
   repository permission, locked installs, Python/TypeScript verification, builds and package inspection.
 - Executable workflow metadata test proving the public CI does not reference provider/PyPI/npm credentials
   or enable the opt-in real-provider smoke path.
+- Public protected-main delivery now requires the successful, strict `verify` check in addition to review
+  and resolved conversations; the validated workflow itself remains credential-free.
 
 - Product-owned conversation integration: canonical `conversation_create`, `conversation_context` and
   `conversation_append` tools across Python CLI, MCP, pi and dsh adapters without database access.
