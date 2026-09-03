@@ -23,6 +23,8 @@
   same files plus SHA-256 checksums to a GitHub Release, and keeps PyPI publication independently opt-in.
 - Tokenless PyPI Trusted Publishing through a dedicated `pypi` environment and repository enable variable;
   no PyPI password or API token is accepted by the public workflow.
+- Public repository delivery metadata now exposes the future Pages homepage while the OIDC publication
+  switch remains disabled until external PyPI trust registration is complete.
 
 - Product-owned conversation integration: canonical `conversation_create`, `conversation_context` and
   `conversation_append` tools across Python CLI, MCP, pi and dsh adapters without database access.

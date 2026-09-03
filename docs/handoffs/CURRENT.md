@@ -16,7 +16,8 @@
   required, strict check on protected `main`. Merge, tag, registry publication and deployment remain
   unauthorized.
 - Curated Pages and tag/source/PyPI OIDC delivery are being added to the same still-unmerged public-release
-  feature; Pages and the PyPI project are not live yet.
+  feature. GitHub Pages workflow mode, repository Homepage and the `pypi` environment exist; the Pages
+  deployment and PyPI project are not live yet.
 
 ## Current contract
 
@@ -51,7 +52,8 @@
 - Python and npm registries remain separate, opt-in publication states. Source artifacts do not imply
   public registry availability.
 - Public tags will retain four archive classes and create GitHub Releases without registry credentials.
-  PyPI remains disabled until an authorized account registers the OIDC publisher and enables the variable.
+  PyPI remains explicitly disabled by repository variable until an authorized account registers the OIDC
+  publisher and enables it.
 
 ## Remaining delivery steps
 
@@ -71,3 +73,5 @@
   SHA-256 manifest, Bun/Python dependency audits and Bandit passed.
 - Public GitHub `verify` passed all credential-free gates with no action-runtime warning; protected `main`
   requires that check, one approving review and resolved conversations.
+- The Pages/release/OIDC delivery head passed both internal and public CI. No workflow was manually
+  dispatched and no merge, tag, package publication or Pages deployment occurred.

@@ -6,6 +6,6 @@
 - [x] Synchronize README, package URLs, architecture, security, changelog, MR and handoff documentation.
 - [x] Run OpenSpec strict validation and focused/full Python and TypeScript gates.
 - [x] Build and inspect Python/npm archives and run dependency/security audits.
-- [ ] Commit and push the internal feature, then fast-forward the sanitized public PR history.
-- [ ] Create the GitHub `pypi` environment with publication disabled pending external PyPI registration.
-- [ ] Confirm internal and public pipelines pass without merge, tag, publication or deployment.
+- [x] Commit and push the internal feature, then fast-forward the sanitized public PR history.
+- [x] Create the GitHub `pypi` environment with publication disabled pending external PyPI registration.
+- [x] Confirm internal and public pipelines pass without merge, tag, publication or deployment.

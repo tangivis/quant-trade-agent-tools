@@ -33,3 +33,6 @@ Neither step requires sharing a credential with this repository or an agent.
 - Full GREEN: Python 246 passed / 1 opt-in real-provider case skipped; TypeScript 40 passed; Ruff,
   typecheck, both bundles, Python build, four-file npm archive inspection, SHA-256 manifest, Bun audit,
   resolved Python dependency audit and Bandit passed.
+- Remote GREEN: the internal and public PR pipelines passed. Pages workflow mode, repository Homepage and
+  the empty `pypi` environment were configured; `ENABLE_PYPI_PUBLISH` remains false, so nothing was
+  deployed or published.

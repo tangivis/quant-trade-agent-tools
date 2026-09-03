@@ -45,6 +45,7 @@ tests passed
 public GitHub PR verify: passed without action-runtime warnings; protected main requires this strict check
 public delivery RED/GREEN: 4 failed / 12 passed before implementation; 16 release metadata tests passed
 release-equivalent archives/checksums and Bun/pip/Bandit audits: passed
+Pages/release/OIDC delivery head: internal and public CI passed; publication variable remains false
 ```
 
 ## Rollout and rollback
