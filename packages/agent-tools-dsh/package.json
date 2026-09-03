@@ -1,9 +1,17 @@
 {
   "name": "@quant-trade/agent-tools-dsh",
-  "version": "0.3.1",
-  "description": "Experimental DeepSeek Harness Cordis adapter exposing 9 quant_trade tools. Requires end-to-end revalidation for each dsh release.",
+  "version": "0.4.0",
+  "description": "Experimental DeepSeek Harness Cordis adapter exposing 12 quant_trade tools; each dsh release requires E2E revalidation.",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tangivis/quant-trade-agent-tools.git"
+  },
+  "homepage": "https://github.com/tangivis/quant-trade-agent-tools#readme",
+  "bugs": {
+    "url": "https://github.com/tangivis/quant-trade-agent-tools/issues"
+  },
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -32,7 +40,9 @@
     "quant",
     "trading",
     "9984",
+    "6981",
     "softbank",
+    "murata",
     "japan"
   ],
   "scripts": {

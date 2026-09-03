@@ -5,7 +5,6 @@ import pytest
 import agent_tools.mcp_server as mcp_server
 from agent_tools.mcp_server import create_mcp_server
 
-
 SYMBOLS = ["9984.T", "6981.T"]
 INTERVALS = ["1m", "5m", "15m", "1h", "1d", "1wk"]
 
@@ -63,6 +62,9 @@ async def test_mcp_server_lists_and_calls_tools() -> None:
             "backtest",
             "benchmark",
             "analyze",
+            "conversation_create",
+            "conversation_context",
+            "conversation_append",
         ]
         assert all(tool.annotations is not None for tool in tools.tools)
         assert all(tool.annotations.destructive_hint is False for tool in tools.tools)

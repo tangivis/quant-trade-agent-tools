@@ -7,8 +7,8 @@ import {
 } from "../src/schema.js";
 
 describe("TOOL_NAMES", () => {
-  it("exposes exactly 9 tool names", () => {
-    expect(TOOL_NAMES).toHaveLength(9);
+  it("exposes exactly 12 tool names", () => {
+    expect(TOOL_NAMES).toHaveLength(12);
   });
 
   it("contains the expected canonical names in the canonical order", () => {
@@ -22,6 +22,9 @@ describe("TOOL_NAMES", () => {
       "backtest",
       "benchmark",
       "analyze",
+      "conversation_create",
+      "conversation_context",
+      "conversation_append",
     ]);
   });
 });
@@ -40,8 +43,12 @@ describe("TOOL_SCHEMAS", () => {
     }
   });
 
-  it("analyze schema includes the offline flag", () => {
-    expect(TOOL_SCHEMAS.analyze.inputSchema.properties).toHaveProperty("offline");
+  it("analyze exposes only the native Gateway inputs", () => {
+    expect(Object.keys(TOOL_SCHEMAS.analyze.inputSchema.properties).sort()).toEqual([
+      "question",
+      "symbol",
+    ]);
+    expect(TOOL_SCHEMAS.analyze.description).toContain("Native Gateway");
   });
 
   it("backtest/benchmark require strategy", () => {
@@ -49,8 +56,8 @@ describe("TOOL_SCHEMAS", () => {
     expect(TOOL_SCHEMAS.benchmark.inputSchema.required).toContain("strategy");
   });
 
-  it("keeps the six symbol-scoped tools on the same enum contract", () => {
-    for (const name of ["quote", "kline", "signals", "trending", "backtest", "benchmark"] as const) {
+  it("keeps all symbol-scoped tools on the same enum contract", () => {
+    for (const name of ["quote", "kline", "signals", "trending", "backtest", "benchmark", "analyze", "conversation_create"] as const) {
       expect(TOOL_SCHEMAS[name].inputSchema.properties.symbol).toEqual({
         type: "string",
         enum: SUPPORTED_SYMBOLS,

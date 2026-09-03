@@ -56,15 +56,16 @@ tool-calling。pi、dsh 或 MCP harness 已经持有模型时，不经过 standa
 ### `QuantTradeClient`
 
 - 行情与计算 API：`QUANT_TRADE_API_URL`。
-- 多 agent 分析 API：`QUANT_TRADE_AGENT_URL`。
-- 可选 Bearer auth：`QUANT_TRADE_API_TOKEN`。
+- 产品数据 API：`QUANT_TRADE_API_URL`，可选 Bearer auth 为 `QUANT_TRADE_API_TOKEN`。
+- native Intelligence Gateway：`QUANT_TRADE_GATEWAY_URL`，独立 Bearer auth 为
+  `QUANT_TRADE_AGENT_TOKEN`。
 - 将上游不同 JSON shape 规范化为公开 object contract，非法 shape 显式失败。
 - 对 backtest/benchmark 完成 Rust request mapping，避免 harness 感知内部 enum。
 - benchmark 单请求允许 30 分钟，其余请求保持短 timeout。
 
 ### `ToolRegistry`
 
-9 个 canonical tool 名称和 JSON schema 是跨平台兼容面的唯一真相。新增 harness 应复用 registry 或 CLI，不应重写业务映射。
+12 个 canonical tool 名称和 JSON schema 是跨平台兼容面的唯一真相。新增 harness 应复用 registry 或 CLI，不应重写业务映射。
 
 ### MCP v2
 
@@ -90,7 +91,7 @@ pi adapter 负责注册 `quant_*` tool、把参数交给 CLI bridge，再把结�
 
 ### dsh
 
-dsh adapter 导出 Cordis `name`、`inject = ["tools"]` 与 `apply(ctx)`，并通过 `ctx.tools.register()` 注册 9 个 `quant_*` model tools。npm manifest 的 `dsh.bundle.patch` 指向 `cordis.patch.yml`，供当前 profile plugin CLI 安装。当前单元测试、RC 类型检查、Node smoke 和 bundle 构建已通过，但只有针对固定 dsh profile 完成加载、发现和真实调用 E2E 后，才能升级为 stable。
+dsh adapter 导出 Cordis `name`、`inject = ["tools"]` 与 `apply(ctx)`，并通过 `ctx.tools.register()` 注册 12 个 `quant_*` model tools。npm manifest 的 `dsh.bundle.patch` 指向 `cordis.patch.yml`，供当前 profile plugin CLI 安装。当前单元测试、RC 类型检查、Node smoke 和 bundle 构建已通过，但只有针对固定 dsh profile 完成加载、发现和真实调用 E2E 后，才能升级为 stable。
 
 pi 与 dsh 都从 `@quant-trade/cli-bridge` 读取同一份 TypeScript schema snapshot、boolean flag serializer 和 tool timeout。dsh 不再维护第二份工具 schema。
 
@@ -101,7 +102,7 @@ pi 与 dsh 都从 `@quant-trade/cli-bridge` 读取同一份 TypeScript schema sn
 ```text
 Harness model
   → tools/list
-  ← 9 个 typed tools + annotations
+  ← 12 个 typed tools + annotations
   → tools/call quote
   → MCPServer
   → ToolRegistry.call("quote")

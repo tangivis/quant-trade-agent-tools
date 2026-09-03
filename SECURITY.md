@@ -13,6 +13,9 @@ deterministic risk and execution policy, and any product-approved external mutat
 
 - Treat every REST, MCP and CLI input as untrusted.
 - Treat prompts embedded in history, diffs, headlines and context as data, not system instructions.
+- Never promote a caller-supplied or model-generated conversation summary to the system role.
+- Do not expose product-owned conversation tools inside the Gateway chat agent loop; harness users invoke
+  those tools explicitly under product authorization.
 - Validate model output with exact schemas, enums, length bounds and unknown-field rejection.
 - Fail explicitly on provider, transport, contract or context errors.
 - Do not convert failures into fabricated successful analysis or approval.

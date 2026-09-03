@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
+### Security
+
+- Keep caller-owned conversation summaries in a JSON-encoded user-role message; only the fixed repository
+  policy is sent with system authority.
+- Exclude all product-owned conversation tools from the Gateway's internal chat agent so untrusted model
+  output cannot use a server credential to read or mutate conversation records.
+
 ### Added
+
+- Product-owned conversation integration: canonical `conversation_create`, `conversation_context` and
+  `conversation_append` tools across Python CLI, MCP, pi and dsh adapters without database access.
+- Stateless `POST /v1/summarize/conversation` producer and optional `context_summary` input for chat,
+  with bounded schemas, structured output, OpenAPI snapshot and compatibility tests.
+- Conversation-context OpenSpec, TDD plan and public architecture boundary documentation.
+- Dual-symbol Gateway chat/analyze contracts for `9984.T|6981.T`; context collection now forwards the
+  requested symbol to quote, kline, signals and trending tools.
+- Full verification passed: Python `242 passed / 1 skipped`, TypeScript `40 passed`, Ruff, typecheck,
+  pi/dsh bundles, Python sdist/wheel, isolated wheel execution, npm dry-runs and dependency/security audits;
+  the product cross-repository verifier accepted all boundaries.
 
 - Source/artifact release governance specification and implementation plan: tag-retained archives are
   defined independently from optional public PyPI/npm publication, without recording registry secrets
@@ -65,6 +83,15 @@
 - `Cross-Repo Contract v1`、producer OpenSpec、实施计划和跨 session handoff。
 
 ### Changed
+
+- Prepare `0.4.0` across Python, root workspace, CLI bridge, pi and dsh packages because the pre-1.0
+  canonical analyze input contract is intentionally corrected rather than reusing immutable `0.3.1`.
+- Canonical `analyze` now accepts only `symbol` and optional `question`, calls native `POST /v1/analyze`,
+  and lets the Gateway collect authoritative product facts. Product and Gateway Bearer credentials are
+  configured independently.
+- Pi now forwards host cancellation to the shared CLI subprocess, matching dsh behavior.
+- Public package metadata points to the public GitHub source repository and describes all 12 current tools.
+- CI runs the repository Ruff error/import/modern-typing rules in addition to Python tests.
 
 - Release metadata is synchronized at `0.3.1` across Python runtime/build metadata, capabilities, the
   root/bridge/pi/dsh packages and workspace locks for the source-artifact governance hotfix.

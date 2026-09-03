@@ -129,28 +129,45 @@ def _register_tools(server: MCPServer, registry: ToolRegistry) -> None:
 
     @server.tool(name="analyze", structured_output=True, annotations=COMPUTE_TOOL)
     def analyze(
-        symbol: str = "9984.T",
-        price: float = 0,
-        rsi: float = 50,
-        adx: float = 20,
-        regime: str = "NarrowRange",
-        news_sentiment: float = 0,
-        tweet_sentiment: float = 0,
-        tweet_count: int = 0,
+        symbol: SupportedSymbol = "9984.T",
+        question: str | None = None,
     ) -> dict[str, object]:
-        """Run news-market-trading-risk analysis; this never places an order."""
+        """Run native analysis from server-collected facts; this never places an order."""
         return registry.call(
             "analyze",
             {
                 "symbol": symbol,
-                "price": price,
-                "rsi": rsi,
-                "adx": adx,
-                "regime": regime,
-                "news_sentiment": news_sentiment,
-                "tweet_sentiment": tweet_sentiment,
-                "tweet_count": tweet_count,
+                "question": question,
             },
+        )
+
+    @server.tool(name="conversation_create", structured_output=True, annotations=COMPUTE_TOOL)
+    def conversation_create(
+        channel: Literal["chat", "wish"] = "chat",
+        symbol: SupportedSymbol = "9984.T",
+        title: str | None = None,
+    ) -> dict[str, object]:
+        """Create a product-owned thread shared across supported Harness clients."""
+        return registry.call(
+            "conversation_create",
+            {"channel": channel, "symbol": symbol, "title": title},
+        )
+
+    @server.tool(name="conversation_context", structured_output=True, annotations=READ_ONLY_TOOL)
+    def conversation_context(thread_id: str) -> dict[str, object]:
+        """Read one product-owned conversation summary and recent messages."""
+        return registry.call("conversation_context", {"thread_id": thread_id})
+
+    @server.tool(name="conversation_append", structured_output=True, annotations=COMPUTE_TOOL)
+    def conversation_append(
+        thread_id: str,
+        role: Literal["user", "assistant"],
+        content: str,
+    ) -> dict[str, object]:
+        """Append one message to a product-owned conversation thread."""
+        return registry.call(
+            "conversation_append",
+            {"thread_id": thread_id, "role": role, "content": content},
         )
 
 

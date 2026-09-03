@@ -89,7 +89,15 @@ class FakeAgent:
     def __init__(self, tool_names: list[str]) -> None:
         self.tool_names = tool_names
 
-    def run(self, prompt: str, *, history: list[dict[str, str]] | None = None) -> str:
+    def run(
+        self,
+        prompt: str,
+        *,
+        history: list[dict[str, str]] | None = None,
+        context_summary: str | None = None,
+    ) -> str:
+        if context_summary:
+            return f"{prompt}:{len(history or [])}:{context_summary}"
         return f"{prompt}:{len(history or [])}"
 
     def close(self) -> None:
@@ -115,11 +123,15 @@ async def test_chat_service_blocks_benchmark_by_default() -> None:
     result = await service.run(
         message="分析",
         history=[{"role": "user", "content": "历史"}],
+        context_summary=None,
         symbol="9984.T",
         allow_expensive_tools=False,
     )
 
     assert "benchmark" not in seen_tools[0]
+    assert "conversation_create" not in seen_tools[0]
+    assert "conversation_context" not in seen_tools[0]
+    assert "conversation_append" not in seen_tools[0]
     assert result["answer"] == "分析:1"
 
 
@@ -142,11 +154,15 @@ async def test_chat_service_allows_benchmark_only_when_explicit() -> None:
     await service.run(
         message="扫描参数",
         history=[],
+        context_summary=None,
         symbol="9984.T",
         allow_expensive_tools=True,
     )
 
     assert "benchmark" in seen_tools[0]
+    assert "conversation_create" not in seen_tools[0]
+    assert "conversation_context" not in seen_tools[0]
+    assert "conversation_append" not in seen_tools[0]
 
 
 @pytest.mark.asyncio
@@ -157,6 +173,7 @@ async def test_chat_service_normalizes_agent_runtime_failure() -> None:
             prompt: str,
             *,
             history: list[dict[str, str]] | None = None,
+            context_summary: str | None = None,
         ) -> str:
             raise RuntimeError("iteration limit reached")
 
@@ -172,6 +189,7 @@ async def test_chat_service_normalizes_agent_runtime_failure() -> None:
         await service.run(
             message="分析",
             history=[],
+            context_summary=None,
             symbol="9984.T",
             allow_expensive_tools=False,
         )
@@ -188,6 +206,7 @@ async def test_chat_service_marks_provider_rate_limit_retryable() -> None:
             prompt: str,
             *,
             history: list[dict[str, str]] | None = None,
+            context_summary: str | None = None,
         ) -> str:
             request = httpx.Request("POST", "http://model.test/v1/chat/completions")
             response = httpx.Response(429, request=request)
@@ -209,6 +228,7 @@ async def test_chat_service_marks_provider_rate_limit_retryable() -> None:
         await service.run(
             message="分析",
             history=[],
+            context_summary=None,
             symbol="9984.T",
             allow_expensive_tools=False,
         )
@@ -216,3 +236,24 @@ async def test_chat_service_marks_provider_rate_limit_retryable() -> None:
     assert captured.value.code == "MODEL_RATE_LIMIT"
     assert captured.value.status_code == 503
     assert captured.value.retryable is True
+
+
+@pytest.mark.asyncio
+async def test_chat_service_supports_murata_and_context_summary() -> None:
+    service = GatewayChatService(
+        client_factory=RegistryClient,
+        provider_resolver=lambda: ProviderConfig(
+            provider="fake", base_url="http://model.test/v1", model="fake", api_key=""
+        ),
+        agent_factory=lambda **kwargs: FakeAgent(kwargs["tools"].names()),
+    )
+
+    result = await service.run(
+        message="继续",
+        history=[],
+        context_summary="用户关注村田制作所。",
+        symbol="6981.T",
+        allow_expensive_tools=False,
+    )
+
+    assert result["answer"] == "继续:0:用户关注村田制作所。"

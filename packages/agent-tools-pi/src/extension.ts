@@ -13,12 +13,13 @@ function buildTool(toolName: keyof typeof TOOL_SCHEMAS): ToolDefinition {
     label: `Quant ${toolName}`,
     description: schema.description,
     parameters: schema.inputSchema,
-    execute: async (_toolCallId, params): Promise<AgentToolResult<unknown>> => {
+    execute: async (_toolCallId, params, signal): Promise<AgentToolResult<unknown>> => {
       const args = (params ?? {}) as Record<string, unknown>;
       const result = await spawnQuantCli({
         subcommand: toolName,
         args: buildCliArgs(args),
         timeoutMs: timeoutForTool(toolName),
+        signal,
       });
       const parsed = parseQuantOutput(result);
       return {

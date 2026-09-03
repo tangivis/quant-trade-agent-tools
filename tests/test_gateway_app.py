@@ -57,14 +57,25 @@ class FakeAnalysisProvider:
 
 
 class FakeChatService:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, Any]] = []
+
     async def run(
         self,
         *,
         message: str,
         history: list[dict[str, str]],
+        context_summary: str | None,
         symbol: str,
         allow_expensive_tools: bool,
     ) -> dict[str, Any]:
+        self.calls.append({
+            "message": message,
+            "history": history,
+            "context_summary": context_summary,
+            "symbol": symbol,
+            "allow_expensive_tools": allow_expensive_tools,
+        })
         return {
             "answer": f"{symbol}: {message}",
             "provider": "fake",
@@ -136,6 +147,14 @@ class FakeIntelligenceService:
             "warnings": [],
         }
 
+    async def summarize_conversation(self, **kwargs: Any) -> dict[str, Any]:
+        self.calls.append(("conversation_summary", kwargs))
+        return {
+            "summary": "用户关注村田制作所的日内趋势与风险。",
+            "provenance": {"provider": "fake", "model": "fake-model"},
+            "warnings": [],
+        }
+
     async def review_code(self, **kwargs: Any) -> dict[str, Any]:
         self.calls.append(("code_review", kwargs))
         return {
@@ -189,8 +208,8 @@ def test_capabilities_require_bearer_and_do_not_expose_secrets() -> None:
     assert authorized.status_code == 200
     body = authorized.json()
     assert body["contract_version"] == "v1"
-    assert body["version"] == "0.3.1"
-    assert body["symbols"] == ["9984.T"]
+    assert body["version"] == "0.4.0"
+    assert body["symbols"] == ["9984.T", "6981.T"]
     assert "analyze" in body["tools"]
     assert body["orchestration_modes"] == {
         "active": "native",
@@ -207,6 +226,7 @@ def test_capabilities_require_bearer_and_do_not_expose_secrets() -> None:
         "wish_interpretation",
         "code_review",
         "review_response",
+        "conversation_summary",
     ]
     assert "secret-token" not in authorized.text
 
@@ -312,6 +332,59 @@ def test_chat_is_stateless_and_returns_request_metadata() -> None:
     assert response.status_code == 200
     assert response.json()["answer"] == "9984.T: 比较趋势和情感"
     assert response.json()["request_id"]
+
+
+def test_chat_accepts_second_symbol_and_forwards_summary() -> None:
+    chat = FakeChatService()
+    app = create_app(
+        settings=GatewaySettings(),
+        context_collector=FakeCollector(),
+        analysis_provider=FakeAnalysisProvider(),
+        chat_service=chat,
+        intelligence_service=FakeIntelligenceService(),
+    )
+    client = TestClient(app, raise_server_exceptions=False)
+
+    response = client.post(
+        "/v1/chat",
+        json={
+            "message": "继续分析",
+            "history": [{"role": "assistant", "content": "趋势偏强"}],
+            "context_summary": "此前一直讨论村田制作所。",
+            "symbol": "6981.T",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["answer"] == "6981.T: 继续分析"
+    assert chat.calls[0]["context_summary"] == "此前一直讨论村田制作所。"
+
+
+def test_conversation_summary_is_stateless_and_structured() -> None:
+    intelligence = FakeIntelligenceService()
+    app = create_app(
+        settings=GatewaySettings(),
+        context_collector=FakeCollector(),
+        analysis_provider=FakeAnalysisProvider(),
+        chat_service=FakeChatService(),
+        intelligence_service=intelligence,
+    )
+    client = TestClient(app, raise_server_exceptions=False)
+
+    response = client.post(
+        "/v1/summarize/conversation",
+        json={
+            "previous_summary": "用户关注电子行业。",
+            "messages": [
+                {"role": "user", "content": "分析6981.T"},
+                {"role": "assistant", "content": "当前趋势偏强"},
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["summary"] == "用户关注村田制作所的日内趋势与风险。"
+    assert intelligence.calls[-1][0] == "conversation_summary"
 
 
 def test_gateway_error_uses_structured_envelope() -> None:

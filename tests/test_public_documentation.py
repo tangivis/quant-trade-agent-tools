@@ -4,7 +4,6 @@ import re
 from pathlib import Path
 from urllib.parse import urlsplit
 
-
 ROOT = Path(__file__).parents[1]
 REQUIRED_PUBLIC_DOCS = {
     "README.md": (

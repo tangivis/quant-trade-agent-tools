@@ -41,12 +41,12 @@ describe("agent-tools-dsh plugin", () => {
     expect(typeof plugin.apply).toBe("function");
   });
 
-  it("registers exactly 9 model-facing tools through ctx.tools", async () => {
+  it("registers exactly 12 model-facing tools through ctx.tools", async () => {
     const plugin = await loadPlugin();
     const { ctx, registered } = createContext();
     plugin.apply(ctx as never);
 
-    expect(ctx.tools.register).toHaveBeenCalledTimes(9);
+    expect(ctx.tools.register).toHaveBeenCalledTimes(12);
     expect(registered.map((tool) => tool.name)).toEqual(
       TOOL_NAMES.map((name) => `quant_${name}`),
     );

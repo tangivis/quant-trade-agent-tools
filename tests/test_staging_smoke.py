@@ -8,9 +8,9 @@ from typing import Any
 
 import pytest
 
+from agent_tools import staging_smoke
 from agent_tools.gateway.errors import GatewayError
 from agent_tools.providers import ProviderConfig
-from agent_tools import staging_smoke
 
 
 class ExplodingFactory:

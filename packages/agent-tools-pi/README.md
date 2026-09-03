@@ -1,6 +1,6 @@
 # @quant-trade/agent-tools-pi
 
-pi extension for the 9 read-only `quant_trade` market analysis and decision-support tools.
+pi extension for 12 `quant_trade` market, analysis and product-owned conversation tools.
 
 ```bash
 pi install npm:@quant-trade/agent-tools-pi
@@ -16,5 +16,6 @@ Compatibility and runtime:
 
 - tested host API: `@earendil-works/pi-coding-agent` 0.84.x;
 - runtime: Node.js >= 22.19 plus `uvx` on `PATH`;
+- tool cancellation is forwarded to the owned Python CLI subprocess;
 - Bun is used to test/build this repository, but the published extension does not require a global Bun runtime;
 - no sibling `../quant_trade` checkout or Python import is used; all market access is HTTP.

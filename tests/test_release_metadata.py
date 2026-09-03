@@ -5,9 +5,8 @@ import re
 import tomllib
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_RELEASE_VERSION = "0.3.1"
+EXPECTED_RELEASE_VERSION = "0.4.0"
 PUBLISHED_MANIFESTS = (
     ROOT / "package.json",
     ROOT / "packages/cli-bridge/package.json",
@@ -189,3 +188,31 @@ def test_ci_npm_auth_uses_only_the_masked_environment_variable() -> None:
     ci = (ROOT / ".gitlab-ci.yml").read_text()
     publish_jobs = ci.split("agent-tools-npm-publish-pi:", 1)[1]
     assert publish_jobs.count("NPM_CONFIG_USERCONFIG") == 2
+
+
+def test_public_packages_point_to_public_source_and_current_tool_count() -> None:
+    expected_repository = {
+        "type": "git",
+        "url": "git+https://github.com/tangivis/quant-trade-agent-tools.git",
+    }
+    for path in PUBLISHED_MANIFESTS:
+        manifest = json.loads(path.read_text())
+        assert manifest["repository"] == expected_repository
+        assert manifest["homepage"] == (
+            "https://github.com/tangivis/quant-trade-agent-tools#readme"
+        )
+        assert manifest["bugs"] == {
+            "url": "https://github.com/tangivis/quant-trade-agent-tools/issues"
+        }
+    for path in (
+        ROOT / "packages/agent-tools-pi/package.json",
+        ROOT / "packages/agent-tools-dsh/package.json",
+    ):
+        description = json.loads(path.read_text())["description"]
+        assert "12" in description
+        assert "9" not in description
+
+
+def test_ci_runs_python_lint_gate() -> None:
+    ci = (ROOT / ".gitlab-ci.yml").read_text()
+    assert "uv run ruff check src tests" in ci

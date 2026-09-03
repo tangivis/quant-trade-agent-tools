@@ -11,7 +11,6 @@ is considered complete.
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -57,10 +56,12 @@ def test_agent_tools_cli_help_exits_zero():
     assert result.returncode == 0, f"stderr: {result.stderr}"
 
 
-def test_agent_tools_cli_lists_9_subcommands():
-    """`python -m agent_tools --help` 必须列出 9 个 subcommand."""
+def test_agent_tools_cli_lists_canonical_subcommands():
+    """`python -m agent_tools --help` 必须列出 canonical subcommand."""
     expected = {"quote", "kline", "signals", "news", "sentiment",
-                "trending", "backtest", "benchmark", "analyze"}
+                "trending", "backtest", "benchmark", "analyze",
+                "conversation_create", "conversation_context",
+                "conversation_append"}
     result = subprocess.run(
         ["uv", "run", "python", "-m", "agent_tools", "--help"],
         cwd=str(Path(__file__).parent.parent),
@@ -92,8 +93,8 @@ def test_importing_cli_does_not_import_fastapi() -> None:
     assert result.returncode == 0, result.stderr
 
 
-def test_agent_tools_analyze_subcommand_exists():
-    """`python -m agent_tools analyze --help` 必须 exit 0 且提到 --offline."""
+def test_agent_tools_analyze_subcommand_exposes_native_inputs_only():
+    """The analyze CLI exposes only symbol and an optional question."""
     result = subprocess.run(
         ["uv", "run", "python", "-m", "agent_tools", "analyze", "--help"],
         cwd=str(Path(__file__).parent.parent),
@@ -102,73 +103,41 @@ def test_agent_tools_analyze_subcommand_exists():
         timeout=30,
     )
     assert result.returncode == 0, f"stderr: {result.stderr}"
-    assert "--offline" in result.stdout
+    assert "--symbol" in result.stdout
+    assert "--question" in result.stdout
+    assert "--offline" not in result.stdout
+    assert "--price" not in result.stdout
 
 
 # ============================================================
-# 3. analyze --offline runs run_analysis() 纯函数
+# 3. analyze maps only native Gateway inputs
 # ============================================================
 
 
-def test_agent_tools_analyze_offline_returns_decision():
-    """`agent_tools analyze --offline` returns a fixture response (no HTTP, no LLM).
-
-    The standalone repo does NOT import quant_trade internals. The --offline
-    flag exists for CI/tests only and returns a rule-based fixture with the
-    same dict shape as a real 4-agent decision.
-    """
+def test_agent_tools_analyze_maps_symbol_and_question(monkeypatch):
     from click.testing import CliRunner
+
     from agent_tools import cli
 
+    captured = []
+    monkeypatch.setattr(
+        cli,
+        "run_analyze",
+        lambda **kwargs: captured.append(kwargs) or {"decision": {"action": "HOLD"}},
+    )
     runner = CliRunner()
     result = runner.invoke(
         cli.main,
         [
             "analyze",
-            "--offline",
-            "--price", "15500",
-            "--rsi", "65",
-            "--adx", "28",
-            "--regime", "StrongUp",
-            "--news-sentiment", "0.2",
-            "--tweet-sentiment", "0.1",
+            "--symbol",
+            "6981.T",
+            "--question",
+            "说明风险",
         ],
     )
     assert result.exit_code == 0, f"output: {result.output}\nexc: {result.exception}"
-    import json
-    out = json.loads(result.output)
-    # Fixture response: StrongUp + positive sentiment => BUY
-    assert out["signal"] == "BUY"
-    assert out["final_action"] == "BUY"
-    # Fixture fields
-    assert out["symbol"] == "9984.T"
-    assert isinstance(out["confidence"], (int, float))
-    assert "[offline]" in out["reason"]
-    assert out["risk_notes"] == "offline mode — no real analysis"
-
-
-def test_agent_tools_analyze_offline_hold_signal():
-    """`analyze --offline` returns HOLD when no clear signal."""
-    from click.testing import CliRunner
-    from agent_tools import cli
-
-    runner = CliRunner()
-    result = runner.invoke(
-        cli.main,
-        [
-            "analyze",
-            "--offline",
-            "--price", "15500",
-            "--rsi", "50",
-            "--adx", "20",
-            "--regime", "NarrowRange",
-        ],
-    )
-    assert result.exit_code == 0
-    import json
-    out = json.loads(result.output)
-    assert out["signal"] == "HOLD"
-    assert out["final_action"] == "HOLD"
+    assert captured == [{"symbol": "6981.T", "question": "说明风险"}]
 
 
 
@@ -177,18 +146,20 @@ def test_agent_tools_mcp_server_module_exists():
     import agent_tools.mcp_server  # noqa: F401
 
 
-def test_agent_tools_mcp_server_exposes_9_tool_names():
-    """agent_tools.mcp_server.TOOL_NAMES 必须有 9 个 tool."""
+def test_agent_tools_mcp_server_exposes_canonical_tool_names():
+    """MCP server must expose market and conversation tools."""
     from agent_tools.mcp_server import TOOL_NAMES
 
-    assert len(TOOL_NAMES) == 9
+    assert len(TOOL_NAMES) == 12
     expected = {"quote", "kline", "signals", "news", "sentiment",
-                "trending", "backtest", "benchmark", "analyze"}
+                "trending", "backtest", "benchmark", "analyze",
+                "conversation_create", "conversation_context",
+                "conversation_append"}
     assert set(TOOL_NAMES) == expected
 
 
 # ============================================================
-# 5. 9 个 canonical tool name 兼容性
+# 5. 行情 canonical tool name 兼容性
 # ============================================================
 
 
@@ -197,7 +168,7 @@ def test_agent_tools_mcp_server_exposes_9_tool_names():
     "trending", "backtest", "benchmark", "analyze",
 ])
 def test_agent_tools_exposes_tool_name(tool_name):
-    """9 个 tool name 必须作为 CLI subcommand 存在."""
+    """行情 tool name 必须作为 CLI subcommand 存在."""
     result = subprocess.run(
         ["uv", "run", "python", "-m", "agent_tools", tool_name, "--help"],
         cwd=str(Path(__file__).parent.parent),

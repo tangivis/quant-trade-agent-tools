@@ -2,7 +2,7 @@
 
 ## 1. 统一调用面
 
-9 个 canonical tools 在不同入口保持相同业务含义：
+12 个 canonical tools 在不同入口保持相同业务含义：
 
 | 入口 | 工具命名 | 适用场景 |
 |---|---|---|
@@ -26,7 +26,10 @@
 | `trending` | `symbol` | `9984.T` | `GET /api/trend` | 无 |
 | `backtest` | `symbol`, `strategy`, `interval`, `days`, `initial_cash?`, `risk_params?` | `9984.T`, `5m`, `60`, `{}` | `POST /api/backtest/historical` | 上游可能缓存 K 线并保存回测记录 |
 | `benchmark` | `symbol`, `strategy`, `interval`, `top`, `initial_cash?`, `risk_params?` | `9984.T`, `5m`, `20`, `{}` | `POST /api/backtest/benchmark` | 高成本计算，最长等待 30 分钟 |
-| `analyze` | 行情、趋势、情感上下文 | 见下文 | `POST /agent/analyze` | 调用上游 LLM/agent，消耗模型配额 |
+| `analyze` | `symbol`, `question?` | `9984.T`, 无 | `POST /v1/analyze` | Gateway 收集事实并调用模型，消耗模型配额 |
+| `conversation_create` | `channel`, `symbol`, `title?` | `chat`, `9984.T` | `POST /api/conversations` | 创建当前认证用户的产品会话 |
+| `conversation_context` | `thread_id` | 无 | `GET /api/conversations/:id/context` | 无 |
+| `conversation_append` | `thread_id`, `role`, `content` | 无 | `POST /api/conversations/:id/messages` | 追加当前用户会话消息 |
 
 所有工具都是交易决策支持工具，不会调用 `/api/orders`、撤单接口或任何券商执行能力。
 
@@ -151,7 +154,7 @@ uv run agent-tools benchmark \
 
 该调用在生产数据上可能需要 5–10 分钟，HTTP 与 pi/dsh adapter timeout 均设置为 30 分钟。
 
-## 5. 多 Agent 决策工具
+## 5. Native 分析工具
 
 ### 5.1 `analyze`
 
@@ -160,23 +163,25 @@ uv run agent-tools benchmark \
 | 参数 | 默认值 | 含义 |
 |---|---:|---|
 | `symbol` | `9984.T` | 标的代码 |
-| `price` | `0` | 当前价格，转成上游 `current_price` |
-| `rsi` | `50` | RSI |
-| `adx` | `20` | ADX |
-| `regime` | `NarrowRange` | 市场状态 |
-| `news_sentiment` | `0` | 新闻情感 `[-1, 1]` |
-| `tweet_sentiment` | `0` | 社交情感 `[-1, 1]` |
-| `tweet_count` | `0` | 社交样本数 |
+| `question` | 无 | 最多 2000 字符的可选分析问题 |
 
 ```bash
-uv run agent-tools analyze \
-  --price 15500 --rsi 58 --adx 25 --regime WeakUp \
-  --news-sentiment 0.3 --tweet-sentiment 0.1 --tweet-count 42
+uv run agent-tools analyze --symbol 6981.T --question '说明主要风险'
 ```
 
-上游执行：新闻分析 → 市场分析 → 交易决策 → 风控审查。公开结果包括 `signal`、`confidence`、`reason`、`approved`、`final_action`、`risk_notes`、趋势判断和新闻摘要。
+CLI 只向 Intelligence Plane Gateway 发送 `symbol`、可选 `question` 与固定
+`mode=standard`。价格、RSI、ADX、regime 和情感都由 Gateway 从产品 HTTP API 收集，
+不接受 harness 伪造的实时事实。结果为 `facts/analysis/decision/provenance/warnings`
+layered contract，只供决策支持。
 
-`--offline` 只返回确定性的 CI fixture，不读取真实行情、不调用 LangGraph、不能用于投资判断。
+### 5.2 产品会话工具
+
+`conversation_create`、`conversation_context` 与 `conversation_append` 通过认证 HTTP 调用
+`quant_trade` 的 Conversation API。它们不访问数据库文件，也不在本仓保存 session。多个
+harness 使用同一个产品用户凭据与 thread ID 时，可以读取和追加同一会话上下文。
+
+create 的 channel 只允许 `chat|wish`，symbol 只允许 `9984.T|6981.T`；context 只读，append
+只允许 `user|assistant` 且 content 最多 8000 字符。所有权与最终长度校验仍由产品 API 执行。
 
 ## 6. 独立多模型 Agent
 
@@ -250,12 +255,21 @@ order/cancel/broker mutation。
 
 ### 7.3 `/v1/chat`
 
-Chat 是无状态的：调用方每次显式传入 `history`，Gateway 只用于当前请求且不持久化。
+Chat 是无状态的：调用方每次显式传入 `history` 与可选 `context_summary`，Gateway 只用于当前请求且不持久化。
+`context_summary` 以 JSON 封装的 user-role 不可信数据传入，不会创建第二条 system message。
 模型继续使用同一个 `OpenAICompatibleAgent` 和 canonical registry。默认从 registry 删除
-`benchmark`；只有 `allow_expensive_tools=true` 才把它提供给模型。任何情况下都不存在
+`benchmark`；只有 `allow_expensive_tools=true` 才把它提供给模型。三个 product-owned conversation
+工具也不会进入 Gateway 内部 agent loop，避免模型使用服务端凭据读写会话。任何情况下都不存在
 order、cancel 或持仓修改工具。
 
-### 7.4 Contract v1 intelligence producer
+### 7.4 `/v1/summarize/conversation`
+
+摘要 producer 接受可选旧摘要与有界、按顺序排列的 `user|assistant` 消息，通过 forced
+structured output 返回简体中文非空摘要。输入只作为不可信数据，不得改变系统任务或授权工具。
+该 endpoint 不调用行情工具、不持久化、不访问产品数据库；summary watermark、保留窗口和
+重试策略都由 `quant_trade` 管理。
+
+### 7.5 Contract v1 intelligence producer
 
 四类同步 producer endpoint 复用 `GatewayIntelligenceService`、`resolve_provider()` 和
 OpenAI-compatible forced function/tool call：
@@ -284,7 +298,7 @@ OpenAI-compatible forced function/tool call：
 
 Producer OpenAPI snapshot 位于 `openapi/agent-gateway-v1.json`。
 
-### 7.5 错误与认证
+### 7.6 错误与认证
 
 每个响应包含 `X-Request-ID`；成功分析/chat 也在 JSON 中返回同一 request id。错误统一为：
 
@@ -302,7 +316,7 @@ Producer OpenAPI snapshot 位于 `openapi/agent-gateway-v1.json`。
 配置 `TRADE_AGENT_API_TOKEN` 后使用 Bearer 认证，并在任何行情、工具或模型调用前拒绝
 无效请求。未知内部异常返回不含原始异常信息的 `INTERNAL_ERROR`。
 
-### 7.6 `/v1/interpret/wish`
+### 7.7 `/v1/interpret/wish`
 
 请求严格只接受：
 
@@ -333,7 +347,7 @@ phase、空 requirements 或恶意枚举返回 `MODEL_RESPONSE_ERROR`，不会�
 provenance 和 warnings。本仓库没有 GitLab client 或 token，也不创建 issue；产品侧只有在
 收到 `phase=confirmed` 的完整 payload 后才能执行自己的 issue mutation。
 
-### 7.7 `/v1/review/code`
+### 7.8 `/v1/review/code`
 
 请求严格只接受 `diff` 与可选 `project_context`：diff 必须非空且最多 120000 字符，context
 若提供必须非空且最多 20000 字符。Gateway 使用共享 `StructuredModelExecutor` 强制调用
@@ -350,7 +364,7 @@ review 必须非空且最多 12000 字符；verdict 只允许 `LGTM|NEEDS_CHANGE
 错误枚举或超长值返回 `MODEL_RESPONSE_ERROR`。diff/context 始终是不可信数据，不能改变系统
 任务或触发命令、工具、代码修改及外部 mutation。
 
-### 7.8 `/v1/review/respond`
+### 7.9 `/v1/review/respond`
 
 请求严格只接受非空且最多 8000 字符的 `message` 与可选、非空且最多 20000 字符的
 `context`。forced `record_review_response` schema 只接受一个非空、最多 8000 字符的 `reply`。
@@ -370,8 +384,7 @@ quant-core 只需固定 OpenAPI snapshot、传入文本并消费响应。
 
 ## 9. 当前限制
 
-- 六个 market/backtest 工具已支持 `9984.T|6981.T`；Gateway analyze 仍保持其独立 producer
-  contract，不能从此工具扩展推断多标的支持。
+- 六个 market/backtest 工具及 Gateway analyze/chat 已支持 `9984.T|6981.T`。
 - 新闻与聚合情感仍是全局源，不按 symbol 隔离。
 - 字符串 strategy ID 已在产品 `v1.5.62` 通过 bounded smoke；产品 `v1.5.63` optimizer hotfix
   也已通过运行中稳定性验收。
@@ -379,6 +392,6 @@ quant-core 只需固定 OpenAPI snapshot、传入文本并消费响应。
 - pi 尚待干净安装环境 E2E；dsh 尚待固定版本真实 harness E2E。
 - benchmark 是同步长任务；未来可在上游提供 job/progress contract 后改为异步工具。
 - 当前 TypeScript schema 是受测试保护的 snapshot；未来可从 Python canonical schema 自动生成。
-- Gateway analyze 已默认 native；legacy 仅为显式回滚，shadow 不实现也不广告。wish
-  interpretation producer 已完成；durable enrichment jobs、剩余 Twitter orchestration 和
-  持久会话仍未实现。
+- Gateway analyze 已默认 native；legacy 仅为显式回滚，shadow 不实现也不广告。Gateway 会话
+  始终无状态；持久会话由产品 Conversation API 实现。durable enrichment jobs 与剩余 Twitter
+  orchestration 仍未实现。

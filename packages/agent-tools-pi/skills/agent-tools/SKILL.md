@@ -5,7 +5,7 @@ description: 9984.T 与 6981.T 量化交易工具集. 当用户问及两个受�
 
 # agent-tools — quant_trade 量化交易工具
 
-quant_trade 后端的 9 个能力，以 MCP tool 形式暴露。行情与回测工具支持 **9984.T** 和
+quant_trade 后端的 12 个能力，以 MCP tool 形式暴露。行情与回测工具支持 **9984.T** 和
 **6981.T**；新闻与聚合情感是全局源，不按 symbol 隔离。
 
 ## When to use
@@ -19,6 +19,7 @@ quant_trade 后端的 9 个能力，以 MCP tool 形式暴露。行情与回测�
 - 用户要求**回测某个策略** → `quant_backtest` (需 strategy 名字)
 - 用户要求**扫描参数空间找最优参数** → `quant_benchmark`
 - 用户要求 **LLM 综合分析/多 agent 交易决策** → `quant_analyze`
+- 用户需要跨 harness 创建、读取或追加产品会话 → `quant_conversation_create`、`quant_conversation_context`、`quant_conversation_append`
 
 ## Inputs
 
@@ -30,6 +31,9 @@ quant_trade 后端的 9 个能力，以 MCP tool 形式暴露。行情与回测�
 - `quant_backtest`: `symbol`, `strategy`, `interval`, `days`, 可选 `initial_cash`, `risk_params`
 - `quant_benchmark`: `symbol`, `strategy`, `interval`, `top`, 可选 `initial_cash`, `risk_params`
 - `quant_analyze`: `price`, `rsi`, `adx`, `regime`, `news_sentiment`, `tweet_sentiment`, `tweet_count`, `offline`
+- `quant_conversation_create`: `channel`, `symbol`, 可选 `title`
+- `quant_conversation_context`: `thread_id`
+- `quant_conversation_append`: `thread_id`, `role`, `content`
 
 ## Returns
 
@@ -56,5 +60,5 @@ quant_trade 后端的 9 个能力，以 MCP tool 形式暴露。行情与回测�
 - **语言**: 后端信号描述使用简体中文.
 - **价格单位**: JPY.
 - **LLM 配额**: `quant_analyze` 默认走 HTTP, 触发 LLM 调用; 受 quota circuit breaker 限制 (90s 冷却窗).
-- **CI 模式**: `quant_analyze --offline=true` 跳过 HTTP 直接调 `run_analysis()` 纯函数 (CI / 测试用).
+- **Analyze**: `quant_analyze` 只接受 `symbol` 与可选 `question`；行情事实由 Intelligence Plane Gateway 从产品 API 收集。
 - **MCP 桥接**: 这些 tool 通过 `@quant-trade/cli-bridge` 调 `uvx quant-trade-agent-tools <subcommand>` 子进程. 子进程超时: 默认 30s, analyze 60s.

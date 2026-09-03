@@ -8,9 +8,9 @@ process.env.AGENT_TOOLS_PYTHON_CMD = `uv run --project ${repositoryRoot} agent-t
 
 describe("spawnQuantCli", () => {
   it("serializes booleans as Click flags", () => {
-    expect(buildCliArgs({ offline: true, ignored: false, price: 100 })).toEqual([
-      "--offline",
-      "--price",
+    expect(buildCliArgs({ verbose: true, ignored: false, count: 100 })).toEqual([
+      "--verbose",
+      "--count",
       "100",
     ]);
   });
@@ -89,14 +89,14 @@ describe("spawnQuantCli", () => {
   });
 
   it("respects custom timeout", async () => {
-    const start = Date.now();
-    const result = await spawnQuantCli({
-      subcommand: "analyze",
-      args: ["--offline", "--price", "100"],
-      timeoutMs: 1_000,
-    });
-    const elapsed = Date.now() - start;
-    expect(elapsed).toBeLessThan(10_000);
-    expect(result.exitCode).toBeDefined();
+    const previousCommand = process.env.AGENT_TOOLS_PYTHON_CMD;
+    process.env.AGENT_TOOLS_PYTHON_CMD = `node ${resolve(import.meta.dir, "fixtures/slow.mjs")}`;
+    try {
+      const result = await spawnQuantCli({ subcommand: "ignored", timeoutMs: 50 });
+      expect(result.exitCode).toBe(124);
+      expect(result.stderr).toContain("timeout");
+    } finally {
+      process.env.AGENT_TOOLS_PYTHON_CMD = previousCommand;
+    }
   });
 });

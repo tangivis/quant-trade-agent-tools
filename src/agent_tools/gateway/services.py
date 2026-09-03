@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import math
-from typing import Any, Callable, Protocol
+from collections.abc import Callable
+from typing import Any, Protocol
 
 import httpx
 
@@ -19,7 +20,6 @@ from .intelligence import (
     StructuredOutputClient,
     model_response_error,
 )
-
 
 _ANALYSIS_ACTIONS = {"BUY", "HOLD", "SELL"}
 _TREND_DIRECTIONS = {"UP", "DOWN", "SIDEWAYS", "UNCLEAR"}
@@ -338,10 +338,11 @@ class GatewayChatService:
         *,
         message: str,
         history: list[dict[str, str]],
+        context_summary: str | None,
         symbol: str,
         allow_expensive_tools: bool,
     ) -> dict[str, Any]:
-        if symbol != "9984.T":
+        if symbol not in {"9984.T", "6981.T"}:
             raise GatewayError(
                 code="UNSUPPORTED_SYMBOL",
                 message=f"不支持的标的: {symbol}",
@@ -357,12 +358,19 @@ class GatewayChatService:
             ) from exc
 
         client = self.client_factory()
-        registry = build_tool_registry(client)
+        registry = build_tool_registry(client).without(
+            {"conversation_create", "conversation_context", "conversation_append"}
+        )
         if not allow_expensive_tools:
             registry = registry.without({"benchmark"})
         agent = self.agent_factory(config=config, tools=registry)
         try:
-            answer = await asyncio.to_thread(agent.run, message, history=history)
+            answer = await asyncio.to_thread(
+                agent.run,
+                message,
+                history=history,
+                context_summary=context_summary,
+            )
             used_tools = list(getattr(agent, "last_tool_names", []))
         except httpx.TimeoutException as exc:
             raise GatewayError(

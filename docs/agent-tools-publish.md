@@ -84,7 +84,7 @@ stdio client 的最小配置：
       "args": ["quant-trade-agent-tools", "mcp"],
       "env": {
         "QUANT_TRADE_API_URL": "http://127.0.0.1:5188",
-        "QUANT_TRADE_AGENT_URL": "http://127.0.0.1:8003"
+        "QUANT_TRADE_GATEWAY_URL": "http://127.0.0.1:8010"
       }
     }
   }
@@ -99,7 +99,7 @@ MCP harness 使用自己的 GPT、Claude、DeepSeek、Kimi 或其他模型；age
 pi install npm:@quant-trade/agent-tools-pi
 ```
 
-pi adapter 注册 9 个 `quant_*` tools，通过 `uvx quant-trade-agent-tools` 调用稳定 CLI。发布前需要在干净环境完成一次安装、工具发现和真实 API 调用。
+pi adapter 注册 12 个 `quant_*` tools，通过 `uvx quant-trade-agent-tools` 调用稳定 CLI。发布前需要在干净环境完成一次安装、工具发现和真实 API 调用。
 
 当前验证并声明的 peer API 为 `@earendil-works/pi-coding-agent` 0.84.x。adapter bundle 使用 Node.js `child_process`，因此 host 运行时不再隐式依赖 Bun；开发测试和构建仍按仓库规范使用 Bun。
 
@@ -118,7 +118,7 @@ dsh plugin --profile <profile> add @quant-trade/agent-tools-dsh@experimental
 1. 固定 dsh 与 Cordis 版本。
 2. 在干净环境安装 npm package。
 3. 验证 plugin 被加载。
-4. 验证 9 个工具可发现。
+4. 验证 12 个工具可发现。
 5. 至少真实调用 `quote` 和带参数的 `kline`。
 6. 记录兼容矩阵和回退方案。
 
@@ -128,7 +128,8 @@ pi 与 dsh 的发布 bundle 都内联内部 CLI bridge，不包含 `workspace:*`
 
 - Node.js >= 22.19；
 - `uv`/`uvx`，且 `uvx quant-trade-agent-tools` 可执行；
-- 可达的 `quant_trade` HTTP API，通过 `QUANT_TRADE_API_URL`、`QUANT_TRADE_AGENT_URL` 和可选 `QUANT_TRADE_API_TOKEN` 配置。
+- 可达的产品 HTTP API 与 Intelligence Gateway，通过 `QUANT_TRADE_API_URL`、
+  `QUANT_TRADE_GATEWAY_URL`、`QUANT_TRADE_API_TOKEN` 和 `QUANT_TRADE_AGENT_TOKEN` 分别配置。
 
 Bun 只用于本仓库 TypeScript 安装、测试和构建。
 

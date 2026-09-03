@@ -121,6 +121,44 @@
         }
       }
     },
+    "/v1/summarize/conversation": {
+      "post": {
+        "summary": "Summarize Conversation",
+        "operationId": "summarize_conversation_v1_summarize_conversation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationSummaryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/enrich/headlines/sentiment": {
       "post": {
         "summary": "Enrich Headline Sentiment",
@@ -515,7 +553,10 @@
         "properties": {
           "symbol": {
             "type": "string",
-            "const": "9984.T",
+            "enum": [
+              "9984.T",
+              "6981.T"
+            ],
             "title": "Symbol",
             "default": "9984.T"
           },
@@ -550,7 +591,10 @@
           },
           "symbol": {
             "type": "string",
-            "const": "9984.T",
+            "enum": [
+              "9984.T",
+              "6981.T"
+            ],
             "title": "Symbol"
           },
           "as_of": {
@@ -672,9 +716,25 @@
             "type": "array",
             "title": "History"
           },
+          "context_summary": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Summary"
+          },
           "symbol": {
             "type": "string",
-            "const": "9984.T",
+            "enum": [
+              "9984.T",
+              "6981.T"
+            ],
             "title": "Symbol",
             "default": "9984.T"
           },
@@ -809,6 +869,77 @@
         ],
         "title": "CodeReviewResponse"
       },
+      "ConversationSummaryRequest": {
+        "properties": {
+          "previous_summary": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Summary"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryMessage"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Messages"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "ConversationSummaryRequest"
+      },
+      "ConversationSummaryResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "contract_version": {
+            "type": "string",
+            "const": "v1",
+            "title": "Contract Version",
+            "default": "v1"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Summary"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "summary",
+          "provenance",
+          "warnings"
+        ],
+        "title": "ConversationSummaryResponse"
+      },
       "GapHeadline": {
         "properties": {
           "publisher": {
@@ -836,7 +967,10 @@
         "properties": {
           "symbol": {
             "type": "string",
-            "const": "9984.T",
+            "enum": [
+              "9984.T",
+              "6981.T"
+            ],
             "title": "Symbol",
             "default": "9984.T"
           },
@@ -967,7 +1101,10 @@
         "properties": {
           "symbol": {
             "type": "string",
-            "const": "9984.T",
+            "enum": [
+              "9984.T",
+              "6981.T"
+            ],
             "title": "Symbol",
             "default": "9984.T"
           },
@@ -1308,7 +1445,10 @@
         "properties": {
           "symbol": {
             "type": "string",
-            "const": "9984.T",
+            "enum": [
+              "9984.T",
+              "6981.T"
+            ],
             "title": "Symbol",
             "default": "9984.T"
           },

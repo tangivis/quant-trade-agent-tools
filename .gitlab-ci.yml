@@ -17,6 +17,7 @@ test:
   script:
     - uv sync --extra dev
     - uv run pytest tests/ -v
+    - uv run ruff check src tests
     - bun install --frozen-lockfile
     - bun test packages/
     - bun run typecheck
