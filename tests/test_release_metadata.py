@@ -286,6 +286,12 @@ def test_github_tag_release_retains_artifacts_and_gates_oidc_pypi() -> None:
 
     assert "tags:" in workflow
     assert '      - "v*"' in workflow
+    assert "fetch-depth: 0" in workflow
+    assert 'git fetch --no-tags origin main:refs/remotes/origin/main' in workflow
+    assert (
+        'git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/main'
+        in workflow
+    )
     assert 'test "$GITHUB_REF_NAME" = "v$(uv version --short)"' in workflow
     for command in (
         "uv sync --extra dev --locked",

@@ -9,9 +9,10 @@ push to protected `main`, or a manually authorized dispatch from the default bra
 
 ## Release workflow
 
-The tag workflow first verifies that `vX.Y.Z` equals the package version, installs from checked-in locks,
-runs the full credential-free gates, builds Python sdist/wheel and pi/dsh tarballs, and uploads a single
-release artifact. A dependent GitHub Release job downloads those exact files instead of rebuilding them.
+The tag workflow first verifies that its commit is reachable from protected `main` and that `vX.Y.Z`
+equals the package version, installs from checked-in locks, runs the full credential-free gates, builds
+Python sdist/wheel and pi/dsh tarballs, and uploads a single release artifact. A dependent GitHub Release
+job downloads those exact files instead of rebuilding them.
 
 PyPI publication is a separate dependent job with `environment: pypi` and `id-token: write`. It runs only
 when repository variable `ENABLE_PYPI_PUBLISH` equals `true`; otherwise GitHub source/artifact release can

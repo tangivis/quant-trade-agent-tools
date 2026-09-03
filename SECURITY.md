@@ -83,6 +83,8 @@ intent only. Any later product-approved action belongs to the Product/Data/Domai
   receive provider or registry credentials and cannot enable opt-in live-provider or publication jobs.
 - Public tag builds retain verified archives before any registry job. PyPI publishing uses a dedicated
   environment and OIDC short-lived identity; this repository does not require a stored PyPI token.
+- Release tags are immutable and the workflow fails unless the tagged commit is reachable from protected
+  `main` and the tag exactly matches package version metadata.
 - GitHub Pages publishes only the explicit `site/` directory, never internal handoffs or verification logs.
 - Review packaged files for local paths, credentials and workspace-only runtime dependencies.
 - Keep the default branch protected and merge through reviewed, passing pipelines.

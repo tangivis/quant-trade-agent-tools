@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
       - name: Install uv and Python
         uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
         with:
@@ -37,6 +39,8 @@ jobs:
           bun install --frozen-lockfile
       - name: Verify tag and source
         run: |
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/main
           test "$GITHUB_REF_NAME" = "v$(uv version --short)"
           uv run pytest tests/ -v
           uv run ruff check src tests

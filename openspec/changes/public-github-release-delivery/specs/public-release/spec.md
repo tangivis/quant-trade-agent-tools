@@ -17,8 +17,9 @@ internal execution documents or sensitive configuration.
 
 ### Requirement: credential-independent source release
 
-A valid version tag SHALL always run full verification, build Python and harness archives, retain them as
-workflow artifacts, and attach the same archives to a GitHub Release without registry credentials.
+A valid version tag whose commit is reachable from protected `main` SHALL always run full verification,
+build Python and harness archives, retain them as workflow artifacts, and attach the same archives to a
+GitHub Release without registry credentials. A feature-only commit SHALL fail closed before publication.
 
 #### Scenario: no registry publisher is configured
 

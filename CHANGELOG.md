@@ -25,6 +25,8 @@
   no PyPI password or API token is accepted by the public workflow.
 - Public repository delivery metadata now exposes the future Pages homepage while the OIDC publication
   switch remains disabled until external PyPI trust registration is complete.
+- Release tags are protected against update/deletion and fail closed unless their commit is reachable from
+  protected `main` and their name exactly matches the synchronized package version.
 
 - Product-owned conversation integration: canonical `conversation_create`, `conversation_context` and
   `conversation_append` tools across Python CLI, MCP, pi and dsh adapters without database access.

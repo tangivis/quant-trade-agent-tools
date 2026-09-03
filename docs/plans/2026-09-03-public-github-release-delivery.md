@@ -29,6 +29,8 @@ Neither step requires sharing a credential with this repository or an agent.
   future public URL metadata did not exist.
 - Integrity RED: the first workflow omitted a release checksum manifest; the focused checksum assertion
   failed until all Python/npm archives and `SHA256SUMS` shared one retained artifact.
+- Provenance RED: the first tag workflow checked only its version name. A focused assertion failed until
+  full history checkout and protected-main ancestry verification were added before every release gate.
 - Focused GREEN: all 16 release metadata tests passed and the OpenSpec delta passed strict validation.
 - Full GREEN: Python 246 passed / 1 opt-in real-provider case skipped; TypeScript 40 passed; Ruff,
   typecheck, both bundles, Python build, four-file npm archive inspection, SHA-256 manifest, Bun audit,
