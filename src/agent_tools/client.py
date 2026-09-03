@@ -233,6 +233,10 @@ class QuantTradeClient:
             headers=self._agent_headers,
         )
 
+    def legacy_analyze(self, payload: dict[str, Any]) -> dict[str, Any]:
+        """Call the product-owned legacy analysis endpoint for explicit rollback only."""
+        return self._post(self.api_base_url, "/agent/analyze", payload)
+
     def conversation_create(
         self,
         *,

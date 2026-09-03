@@ -279,7 +279,7 @@ def test_analyze_rejects_caller_supplied_live_values() -> None:
 
 def test_analyze_legacy_mode_remains_an_explicit_app_level_rollback() -> None:
     class LegacyClient:
-        def analyze(self, _payload: dict[str, Any]) -> dict[str, Any]:
+        def legacy_analyze(self, _payload: dict[str, Any]) -> dict[str, Any]:
             return {
                 "final_action": "HOLD",
                 "confidence": 0.4,

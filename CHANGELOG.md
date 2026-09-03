@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep explicit legacy analysis rollback on the product-owned `/agent/analyze` endpoint through a
+  separately named client method; it no longer calls the native, keyword-only Gateway analyze client or
+  risks recursive dispatch.
+- Bind the validated Gateway chat symbol into user-role model context and use it only as the default for
+  symbol-scoped tool calls that omit `symbol`. Explicit tool symbols remain authoritative, while global
+  news and sentiment calls remain unscoped.
+
 ### Security
 
 - Keep caller-owned conversation summaries in a JSON-encoded user-role message; only the fixed repository

@@ -238,7 +238,7 @@ class LegacyAnalysisProvider:
 
         client = self.client_factory()
         try:
-            response = await asyncio.to_thread(client.analyze, payload)
+            response = await asyncio.to_thread(client.legacy_analyze, payload)
         except httpx.TimeoutException as exc:
             raise GatewayError(
                 code="UPSTREAM_TIMEOUT",
@@ -370,6 +370,7 @@ class GatewayChatService:
                 message,
                 history=history,
                 context_summary=context_summary,
+                selected_symbol=symbol,
             )
             used_tools = list(getattr(agent, "last_tool_names", []))
         except httpx.TimeoutException as exc:

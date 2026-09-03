@@ -55,6 +55,14 @@ Conversation durability is deliberately outside this plane. `quant_trade` owns u
 symbols, rolling summaries and retention. The Gateway accepts only bounded caller-owned context and
 discards it after each request.
 
+Gateway chat carries its validated selected symbol as user-role JSON. The runtime supplies that value
+only when a canonical symbol-scoped tool call omits `symbol`; an explicit argument is preserved and global
+news/sentiment tools remain unscoped. This prevents a second-symbol chat from silently falling back to the
+first symbol without granting caller data system-message authority.
+
+Native analysis is the default. The operator-only legacy rollback uses a separately named product client
+method for `/agent/analyze`, so it cannot recurse into the Gateway's canonical `/v1/analyze` client.
+
 ### MCP, CLI and harnesses
 
 MCP is the stable interface for model-capable harnesses. CLI is the stable interface for people,

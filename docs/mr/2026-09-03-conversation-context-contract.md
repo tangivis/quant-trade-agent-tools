@@ -13,8 +13,11 @@
 
 - Add stateless conversation summary input/output contracts and three product-owned conversation tools.
 - Support both declared symbols through Gateway chat/analyze context collection.
+- Bind the validated chat symbol as user-role context and default it only into symbol-scoped tool calls
+  that omit the field; do not synthesize symbol scope for global feeds.
 - Keep caller-derived summaries at user privilege and preserve the fixed system policy boundary.
 - Correct canonical analyze to call native Gateway `/v1/analyze` with only symbol/question.
+- Preserve explicit legacy rollback through the separately named product `/agent/analyze` client method.
 - Forward cancellation in both pi and dsh adapters.
 - Add public source metadata, accurate 12-tool descriptions and a Python lint gate.
 - Add a credential-free public GitHub CI gate with immutable action revisions, read-only permissions and

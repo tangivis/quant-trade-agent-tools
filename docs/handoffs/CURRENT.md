@@ -4,17 +4,18 @@
 
 ## Objective and Git state
 
-- Objective: finish the conversation-context contract and public-release hardening for `0.4.0`.
-- Branch: `feature/conversation-context-contract`, based on the immutable `v0.3.1` main revision.
-- Active OpenSpecs: `openspec/changes/conversation-context-contract/` and
-  `openspec/changes/public-github-release-delivery/`.
-- The internal feature has a passing review pipeline. No merge, tag, registry publication or deployment
-  is authorized by this handoff.
+- Objective: close the two valid public review blockers, then finish protected public delivery for `0.4.0`.
+- Branch: `feature/public-review-blockers`, created from the latest internal `origin/main` after the prior
+  delivery MR was merged with an identical committed tree.
+- Active OpenSpec: `openspec/changes/public-review-blockers/`; the conversation-context and public-release
+  specs describe the already delivered parent scope.
+- The prior internal delivery is on `main`. This fix still requires its own internal MR and public PR
+  checks. No tag, registry publication or deployment is authorized by this handoff.
 - The public GitHub repository uses the package-aligned name. Sanitized `main` and
   `feature/conversation-context-contract` histories plus public PR #1 exist without mirrored internal refs.
-- The credential-free, Node 24-native pinned-action public `verify` workflow passed on PR #1 and is a
-  required, strict check on protected `main`. Merge, tag, registry publication and deployment remain
-  unauthorized.
+- The credential-free, Node 24-native pinned-action public `verify` workflow passed on PR #1 and remains a
+  required, strict check on protected `main`. Two valid review threads blocked merge and are addressed by
+  the active fix; they must be resolved only after exact tests and CI pass.
 - Curated Pages and tag/source/PyPI OIDC delivery are being added to the same still-unmerged public-release
   feature. GitHub Pages workflow mode, repository Homepage and the `pypi` environment exist; the Pages
   deployment and PyPI project are not live yet.
@@ -32,6 +33,10 @@
 - Product and Gateway Bearer credentials are separate. No provider key enters a harness schema or browser.
 - Gateway chat removes all conversation tools from its internal model registry; only explicit harness
   calls can reach product conversation APIs.
+- Gateway chat binds its validated selected symbol as user-role JSON and supplies it only to symbol-scoped
+  tool calls that omit `symbol`; explicit values remain unchanged and global feeds remain unscoped.
+- Explicit legacy analysis rollback uses the dedicated product `/agent/analyze` client method and cannot
+  recurse through canonical native Gateway analyze.
 
 ## RED/GREEN evidence
 
@@ -42,6 +47,8 @@
   resolved the applicable import/error/modern-typing findings before the final lint gate.
 - Public-delivery RED: 4 failed / 12 passed for missing Pages/release workflows and future public metadata;
   focused GREEN: 16 release metadata tests passed with strict OpenSpec validation.
+- Public-review RED: 5/5 focused tests failed for the missing dedicated legacy dispatch and selected-symbol
+  binding; the same 5/5 are GREEN after the minimal fix. The related suite is 70/70.
 
 ## Release state
 
@@ -57,15 +64,17 @@
 
 ## Remaining delivery steps
 
-- Obtain review before merging public PR #1. Do not merge, tag, publish or deploy from this handoff.
+- Deliver the active fix through protected internal main, update public PR #1, resolve its two addressed
+  threads after CI, then merge under the configured zero-approval policy.
 - Register the pending PyPI Trusted Publisher for this repository, `release.yml` and `pypi` environment,
   then enable publication only after review.
 
 ## Full verification
 
-- Python: 246 passed / 1 explicitly gated real-provider case skipped.
+- Python: 249 passed / 1 explicitly gated real-provider case skipped.
 - TypeScript: 40 passed; typecheck and both harness bundles passed.
-- Ruff, Bandit, Bun audit and resolved Python dependency audit passed.
+- Ruff, strict active OpenSpec, public documentation/release metadata tests, Bandit, Bun audit and resolved
+  Python dependency audit passed.
 - Python sdist/wheel and both npm dry-run packages built at `0.4.0`.
 - An isolated wheel execution returned `agent-tools 0.4.0`; public documentation and release metadata tests
   passed 19/19.

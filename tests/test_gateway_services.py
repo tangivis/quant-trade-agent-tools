@@ -35,7 +35,7 @@ class AnalyzeClient:
         self.payload: dict[str, Any] | None = None
         self.closed = False
 
-    def analyze(self, payload: dict[str, Any]) -> dict[str, Any]:
+    def legacy_analyze(self, payload: dict[str, Any]) -> dict[str, Any]:
         self.payload = payload
         return {
             "signal": "BUY",
@@ -95,6 +95,7 @@ class FakeAgent:
         *,
         history: list[dict[str, str]] | None = None,
         context_summary: str | None = None,
+        selected_symbol: str | None = None,
     ) -> str:
         if context_summary:
             return f"{prompt}:{len(history or [])}:{context_summary}"
@@ -174,6 +175,7 @@ async def test_chat_service_normalizes_agent_runtime_failure() -> None:
             *,
             history: list[dict[str, str]] | None = None,
             context_summary: str | None = None,
+            selected_symbol: str | None = None,
         ) -> str:
             raise RuntimeError("iteration limit reached")
 
@@ -207,6 +209,7 @@ async def test_chat_service_marks_provider_rate_limit_retryable() -> None:
             *,
             history: list[dict[str, str]] | None = None,
             context_summary: str | None = None,
+            selected_symbol: str | None = None,
         ) -> str:
             request = httpx.Request("POST", "http://model.test/v1/chat/completions")
             response = httpx.Response(429, request=request)
@@ -257,3 +260,38 @@ async def test_chat_service_supports_murata_and_context_summary() -> None:
     )
 
     assert result["answer"] == "继续:0:用户关注村田制作所。"
+
+
+@pytest.mark.asyncio
+async def test_chat_service_passes_the_validated_symbol_to_the_agent() -> None:
+    selected_symbols: list[str | None] = []
+
+    class CapturingAgent(FakeAgent):
+        def run(
+            self,
+            prompt: str,
+            *,
+            history: list[dict[str, str]] | None = None,
+            context_summary: str | None = None,
+            selected_symbol: str | None = None,
+        ) -> str:
+            selected_symbols.append(selected_symbol)
+            return "完成"
+
+    service = GatewayChatService(
+        client_factory=RegistryClient,
+        provider_resolver=lambda: ProviderConfig(
+            provider="fake", base_url="http://model.test/v1", model="fake", api_key=""
+        ),
+        agent_factory=lambda **kwargs: CapturingAgent(kwargs["tools"].names()),
+    )
+
+    await service.run(
+        message="分析村田",
+        history=[],
+        context_summary=None,
+        symbol="6981.T",
+        allow_expensive_tools=False,
+    )
+
+    assert selected_symbols == ["6981.T"]

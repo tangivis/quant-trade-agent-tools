@@ -6,12 +6,12 @@ import httpx
 
 from agent_tools.agent import SYSTEM_PROMPT, OpenAICompatibleAgent
 from agent_tools.providers import ProviderConfig
-from agent_tools.tools import build_tool_registry
+from agent_tools.tools import ToolRegistry, ToolSpec, build_tool_registry
 
 
 class FakeClient:
     def quote(self, symbol: str = "9984.T"):
-        return {"price": 15500, "symbol": "9984.T"}
+        return {"price": 15500, "symbol": symbol}
 
     def kline(self, interval: str, count: int, *, symbol: str = "9984.T"):
         return {"interval": interval, "count": count}
@@ -102,6 +102,111 @@ def test_agent_executes_tool_call_then_returns_final_answer() -> None:
     assert tool_message["role"] == "tool"
     assert json.loads(tool_message["content"])["price"] == 15500
     assert agent.last_tool_names == ["quote"]
+
+
+def test_agent_binds_selected_symbol_to_omitted_symbol_tool_argument() -> None:
+    payloads: list[dict] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        payloads.append(json.loads(request.content))
+        if len(payloads) == 1:
+            return httpx.Response(
+                200,
+                json={
+                    "choices": [
+                        {
+                            "message": {
+                                "role": "assistant",
+                                "content": None,
+                                "tool_calls": [
+                                    {
+                                        "id": "call_quote",
+                                        "type": "function",
+                                        "function": {
+                                            "name": "quote",
+                                            "arguments": "{}",
+                                        },
+                                    }
+                                ],
+                            }
+                        }
+                    ]
+                },
+            )
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"role": "assistant", "content": "完成"}}]},
+        )
+
+    agent = OpenAICompatibleAgent(
+        config=ProviderConfig("custom", "https://llm.example/v1", "test", ""),
+        tools=build_tool_registry(FakeClient()),
+        transport=httpx.MockTransport(handler),
+    )
+
+    assert agent.run("继续", selected_symbol="6981.T") == "完成"
+    assert json.loads(payloads[0]["messages"][1]["content"]) == {
+        "selected_symbol": "6981.T"
+    }
+    tool_message = payloads[1]["messages"][-1]
+    assert json.loads(tool_message["content"])["symbol"] == "6981.T"
+
+
+def test_agent_does_not_inject_selected_symbol_into_global_tool() -> None:
+    calls: list[dict] = []
+    registry = ToolRegistry(
+        [
+            ToolSpec(
+                name="news",
+                description="global news",
+                input_schema={"type": "object", "properties": {}},
+                handler=lambda arguments: calls.append(arguments.copy()) or {"count": 0},
+            )
+        ]
+    )
+
+    request_count = 0
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        nonlocal request_count
+        request_count += 1
+        if request_count == 1:
+            return httpx.Response(
+                200,
+                json={
+                    "choices": [
+                        {
+                            "message": {
+                                "role": "assistant",
+                                "content": None,
+                                "tool_calls": [
+                                    {
+                                        "id": "call_news",
+                                        "type": "function",
+                                        "function": {
+                                            "name": "news",
+                                            "arguments": "{}",
+                                        },
+                                    }
+                                ],
+                            }
+                        }
+                    ]
+                },
+            )
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"role": "assistant", "content": "完成"}}]},
+        )
+
+    agent = OpenAICompatibleAgent(
+        config=ProviderConfig("custom", "https://llm.example/v1", "test", ""),
+        tools=registry,
+        transport=httpx.MockTransport(handler),
+    )
+
+    assert agent.run("新闻", selected_symbol="6981.T") == "完成"
+    assert calls == [{}]
 
 
 def test_agent_includes_bounded_caller_history() -> None:

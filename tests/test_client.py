@@ -25,6 +25,7 @@ def test_client_uses_separate_api_and_gateway_bases_and_tokens() -> None:
 
     client.quote()
     client.analyze(symbol="6981.T", question="关注风险")
+    client.legacy_analyze({"symbol": "6981.T", "current_price": 6884})
 
     assert str(requests[0].url) == "http://quant.test:5188/api/quote?symbol=9984.T"
     assert requests[0].headers["authorization"] == "Bearer product-token"
@@ -34,6 +35,12 @@ def test_client_uses_separate_api_and_gateway_bases_and_tokens() -> None:
         "symbol": "6981.T",
         "question": "关注风险",
         "mode": "standard",
+    }
+    assert str(requests[2].url) == "http://quant.test:5188/agent/analyze"
+    assert requests[2].headers["authorization"] == "Bearer product-token"
+    assert json.loads(requests[2].content) == {
+        "symbol": "6981.T",
+        "current_price": 6884,
     }
 
 

@@ -35,6 +35,19 @@ TOOL_NAMES = (
     "conversation_append",
 )
 
+SYMBOL_SCOPED_TOOL_NAMES = frozenset(
+    {
+        "quote",
+        "kline",
+        "signals",
+        "trending",
+        "backtest",
+        "benchmark",
+        "analyze",
+        "conversation_create",
+    }
+)
+
 
 @dataclass(frozen=True)
 class ToolSpec:

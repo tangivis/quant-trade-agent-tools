@@ -130,10 +130,12 @@ OpenAI-compatible forced tool-call client。它们不读取产品数据库，也
 provider、prompt 和 schema 全部保留在本仓；产品只提交有界文本并消费结果。diff/context 被视为
 不可信数据，producer 不运行本地 coding agent、不操作仓库/GitLab/数据库，也不执行交易动作。
 
-`/v1/chat` 接受产品组合的 `context_summary` 与近期 history，但不保存会话。摘要始终以
-不可信 user-role 数据传入模型，不会升格为 system instruction。`/v1/summarize/conversation`
-把旧摘要和有界消息压缩为新的简体中文摘要，同样不访问产品数据库。长期消息、用户所有权、
-thread/channel/symbol 由 `quant_trade` 的 Conversation API 和 PostgreSQL 管理。
+`/v1/chat` 接受产品组合的 `context_summary`、近期 history 和已校验 symbol，但不保存会话。
+摘要与 symbol 始终以不可信 user-role 数据传入模型，不会升格为 system instruction。若模型在
+symbol-scoped 工具调用中省略 symbol，runtime 才补入该已校验值；显式参数保持不变，全局
+news/sentiment 不会被伪装成按 symbol 隔离。`/v1/summarize/conversation` 把旧摘要和有界消息压缩
+为新的简体中文摘要，同样不访问产品数据库。长期消息、用户所有权、thread/channel/symbol 由
+`quant_trade` 的 Conversation API 和 PostgreSQL 管理。
 
 ```bash
 uv sync --extra gateway
@@ -167,7 +169,8 @@ curl http://127.0.0.1:8010/health
 `GET /v1/capabilities` 的 `intelligence_tasks` 只列出已实现能力。producer contract 固定在
 `openapi/agent-gateway-v1.json`；consumer 应固定该 snapshot 并执行 compatibility tests。
 
-`TRADE_AGENT_ORCHESTRATION_MODE` 默认是 `native`。紧急回滚可显式设为 `legacy`；`shadow`
+`TRADE_AGENT_ORCHESTRATION_MODE` 默认是 `native`。紧急回滚可显式设为 `legacy`，该路径使用
+独立的产品 legacy client method，绝不回调本 Gateway 的 native `/v1/analyze`；`shadow`
 尚未实现，配置时会启动失败，也不会出现在 capabilities 的 available/planned 中。
 `quant_trade` 当前由 Rust 定时调用 `/v1/analyze` 并自行持久化结果；本仓库仍不读产品 DB。
 wish consumer 与产品侧 GitLab issue 创建由 `quant_trade` 持有。durable worker/job 和剩余
