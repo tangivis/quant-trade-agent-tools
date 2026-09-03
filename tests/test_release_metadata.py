@@ -289,13 +289,18 @@ def test_github_tag_release_retains_artifacts_and_gates_oidc_pypi() -> None:
 
     assert "tags:" in workflow
     assert '      - "v*"' in workflow
+    assert "workflow_dispatch:" in workflow
+    assert "release_tag:" in workflow
+    assert "required: true" in workflow
+    assert "RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}" in workflow
     assert "fetch-depth: 0" in workflow
+    assert "ref: ${{ inputs.release_tag || github.ref }}" in workflow
     assert 'git fetch --no-tags origin main:refs/remotes/origin/main' in workflow
     assert (
-        'git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/main'
+        "git merge-base --is-ancestor HEAD refs/remotes/origin/main"
         in workflow
     )
-    assert 'test "$GITHUB_REF_NAME" = "v$(uv version --short)"' in workflow
+    assert 'test "$RELEASE_TAG" = "v$(uv version --short)"' in workflow
     for command in (
         "uv sync --extra dev --locked",
         "uv run pytest tests/ -v",
@@ -317,6 +322,9 @@ def test_github_tag_release_retains_artifacts_and_gates_oidc_pypi() -> None:
     assert "sha256sum dist/*.tar.gz dist/*.whl release-artifacts/npm/*.tgz" in workflow
     assert "release-artifacts/SHA256SUMS" in workflow
     assert "gh release create" in workflow
+    assert 'gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY"' in workflow
+    assert '--repo "$GITHUB_REPOSITORY"' in workflow
+    assert "--clobber" not in workflow
     assert "contents: write" in workflow
     assert "vars.ENABLE_PYPI_PUBLISH == 'true'" in workflow
     assert "environment:\n      name: pypi" in workflow

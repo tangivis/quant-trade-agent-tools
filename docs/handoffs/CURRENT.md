@@ -4,12 +4,11 @@
 
 ## Objective and Git state
 
-- Objective: activate the registered tokenless PyPI publisher and deliver the immutable public `0.4.0`
-  release with accurate status metadata.
-- Branch: `feature/pypi-release-activation`, created from the latest internal `origin/main`.
-- Active OpenSpec: `openspec/changes/pypi-release-activation/`.
-- The public review blockers and parent delivery are merged. The release tag remains pending until this
-  documentation delta passes protected internal and public review gates.
+- Objective: recover public `0.4.0` registry publication without moving its immutable tag.
+- Branch: `feature/release-workflow-recovery`, created from the latest internal `origin/main`.
+- Active OpenSpec: `openspec/changes/release-workflow-recovery/`.
+- The public tag build and retained artifacts passed. GitHub Release was restored from those checksum-
+  verified artifacts; PyPI rejected the valid OIDC token because no publisher matched its exact claims.
 - The public GitHub repository uses the package-aligned name. Sanitized `main` and
   `feature/conversation-context-contract` histories plus public PR #1 exist without mirrored internal refs.
 - The credential-free, Node 24-native pinned-action public `verify` workflow passed on PR #1 and remains a
@@ -39,6 +38,8 @@
 
 ## RED/GREEN evidence
 
+- Release recovery RED: the focused workflow metadata test failed on the missing selected-tag dispatch;
+  it passes after adding repository-explicit, immutable-tag recovery.
 - PyPI activation RED: 2/2 focused tests failed on stale README/Pages pending status; the same tests pass
   after the minimal public metadata update.
 
@@ -66,9 +67,9 @@
 
 ## Remaining delivery steps
 
-- Deliver the release-status delta through protected internal and public main.
-- Enable the already registered PyPI Trusted Publisher path, create `v0.4.0` on public main, and verify
-  GitHub Release plus PyPI. npm remains unpublished.
+- Deliver the recovery workflow through protected internal and public main.
+- Correct the external publisher fields, dispatch the existing `v0.4.0` tag and verify PyPI. npm remains
+  unpublished and the tag must not move.
 
 ## Full verification
 

@@ -4,9 +4,18 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing immutable release tag to rebuild and publish
+        required: true
+        type: string
 
 permissions:
   contents: read
+
+env:
+  RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
 
 jobs:
   build:
@@ -20,6 +29,7 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
+          ref: ${{ inputs.release_tag || github.ref }}
       - name: Install uv and Python
         uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
         with:
@@ -40,8 +50,8 @@ jobs:
       - name: Verify tag and source
         run: |
           git fetch --no-tags origin main:refs/remotes/origin/main
-          git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/main
-          test "$GITHUB_REF_NAME" = "v$(uv version --short)"
+          git merge-base --is-ancestor HEAD refs/remotes/origin/main
+          test "$RELEASE_TAG" = "v$(uv version --short)"
           uv run pytest tests/ -v
           uv run ruff check src tests
           bun test packages/
@@ -82,14 +92,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            release-bundle/dist/*.tar.gz \
-            release-bundle/dist/*.whl \
-            release-bundle/release-artifacts/npm/*.tgz \
-            release-bundle/release-artifacts/SHA256SUMS \
-            --verify-tag \
-            --generate-notes \
-            --title "$GITHUB_REF_NAME"
+          if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" \
+              release-bundle/dist/*.tar.gz \
+              release-bundle/dist/*.whl \
+              release-bundle/release-artifacts/npm/*.tgz \
+              release-bundle/release-artifacts/SHA256SUMS \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --generate-notes \
+              --title "$RELEASE_TAG"
+          fi
+          expected_assets=$(find release-bundle -type f -printf '%f\n' | sort)
+          actual_assets=$(gh release view "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json assets \
+            --jq '.assets[].name' | sort)
+          test "$actual_assets" = "$expected_assets"
 
   pypi-publish:
     name: pypi-publish

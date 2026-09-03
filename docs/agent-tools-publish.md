@@ -168,5 +168,9 @@ Bun 只用于本仓库 TypeScript 安装、测试和构建。
 5. 分别核对 artifact release、PyPI 与 npm 的实际 job 状态；只声明确实成功的状态。Python
    与 pi 使用 stable channel；dsh 在固定 host E2E 完成前只使用 `experimental` dist-tag。
 
+若 tag build 已成功但 registry identity 配置错误，修正外部配置后可手动运行 `Release` workflow，
+输入已存在的完整 `vX.Y.Z` tag。recovery 会 checkout 并重新验证该不可变 tag；已有 GitHub Release
+只做精确 asset-name 校验，不覆盖附件。不得通过移动、删除或重建 tag 来重试发布。
+
 当前 npm package 使用公共 scope `@quant-trade`。首次发布前，token 所属 npm
 账户必须拥有该 scope 的 publish 权限；包名未被发布不等于当前账户自动拥有 scope。

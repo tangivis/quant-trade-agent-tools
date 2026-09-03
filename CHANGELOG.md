@@ -4,6 +4,9 @@
 
 ### Fixed
 
+- Make public release recovery repository-explicit and safe for an existing immutable tag: manual dispatch
+  checks out and validates the requested tag, while an existing GitHub Release is verified rather than
+  overwritten before retrying tokenless PyPI publication.
 - Keep explicit legacy analysis rollback on the product-owned `/agent/analyze` endpoint through a
   separately named client method; it no longer calls the native, keyword-only Gateway analyze client or
   risks recursive dispatch.
