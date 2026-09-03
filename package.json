@@ -1,0 +1,31 @@
+{
+  "name": "quant-trade-agent-tools-monorepo",
+  "version": "0.3.1",
+  "private": true,
+  "description": "Independent multi-harness adapters and shared bridge for quant_trade agent tools.",
+  "type": "module",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "bun test",
+    "test:cli-bridge": "bun test packages/cli-bridge/tests/",
+    "test:pi": "bun test packages/agent-tools-pi/tests/",
+    "test:dsh": "bun test packages/agent-tools-dsh/tests/",
+    "build": "bash packages/agent-tools-pi/scripts/build.sh && bash packages/agent-tools-dsh/scripts/build.sh",
+    "typecheck": "tsc --build",
+    "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules bun.lock"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=22.19.0",
+    "bun": ">=1.4.0"
+  },
+  "publishConfig": {
+    "access": "private"
+  }
+}

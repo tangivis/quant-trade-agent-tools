@@ -1,0 +1,1648 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "quant-trade-agent Gateway",
+    "version": "v1"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/capabilities": {
+      "get": {
+        "summary": "Capabilities",
+        "operationId": "capabilities_v1_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilitiesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/analyze": {
+      "post": {
+        "summary": "Analyze",
+        "operationId": "analyze_v1_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/chat": {
+      "post": {
+        "summary": "Run Chat",
+        "operationId": "run_chat_v1_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/enrich/headlines/sentiment": {
+      "post": {
+        "summary": "Enrich Headline Sentiment",
+        "operationId": "enrich_headline_sentiment_v1_enrich_headlines_sentiment_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeadlineSentimentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeadlineSentimentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/enrich/sentiment-summary": {
+      "post": {
+        "summary": "Enrich Sentiment Summary",
+        "operationId": "enrich_sentiment_summary_v1_enrich_sentiment_summary_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SentimentSummaryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentimentSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/narratives/gap": {
+      "post": {
+        "summary": "Generate Gap Narrative",
+        "operationId": "generate_gap_narrative_v1_narratives_gap_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GapNarrativeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GapNarrativeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/translate": {
+      "post": {
+        "summary": "Translate",
+        "operationId": "translate_v1_translate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranslationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranslationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/interpret/wish": {
+      "post": {
+        "summary": "Interpret Wish",
+        "operationId": "interpret_wish_v1_interpret_wish_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WishInterpretationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WishInterpretationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/review/code": {
+      "post": {
+        "summary": "Review Code",
+        "operationId": "review_code_v1_review_code_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodeReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodeReviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/review/respond": {
+      "post": {
+        "summary": "Respond To Review",
+        "operationId": "respond_to_review_v1_review_respond_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRespondRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewRespondResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalysisDecision": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "BUY",
+              "HOLD",
+              "SELL"
+            ],
+            "title": "Action"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "approved": {
+            "type": "boolean",
+            "title": "Approved"
+          },
+          "risk_notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Risk Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action",
+          "confidence",
+          "approved",
+          "risk_notes"
+        ],
+        "title": "AnalysisDecision"
+      },
+      "AnalysisDetails": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Summary"
+          },
+          "trend_direction": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trend Direction"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          },
+          "news_summary": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "News Summary"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "summary"
+        ],
+        "title": "AnalysisDetails"
+      },
+      "AnalysisProvenance": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Provider"
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Model"
+          },
+          "tools": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tools"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider",
+          "model",
+          "tools"
+        ],
+        "title": "AnalysisProvenance"
+      },
+      "AnalyzeRequest": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "const": "9984.T",
+            "title": "Symbol",
+            "default": "9984.T"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          },
+          "mode": {
+            "type": "string",
+            "const": "standard",
+            "title": "Mode",
+            "default": "standard"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AnalyzeRequest"
+      },
+      "AnalyzeResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "symbol": {
+            "type": "string",
+            "const": "9984.T",
+            "title": "Symbol"
+          },
+          "as_of": {
+            "type": "string",
+            "title": "As Of"
+          },
+          "facts": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Facts"
+          },
+          "analysis": {
+            "$ref": "#/components/schemas/AnalysisDetails"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/AnalysisDecision"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/AnalysisProvenance"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "symbol",
+          "as_of",
+          "facts",
+          "analysis",
+          "decision",
+          "provenance",
+          "warnings"
+        ],
+        "title": "AnalyzeResponse"
+      },
+      "CapabilitiesResponse": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "v1",
+            "title": "Contract Version",
+            "default": "v1"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "symbols": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Symbols"
+          },
+          "tools": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tools"
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Providers"
+          },
+          "orchestration_modes": {
+            "$ref": "#/components/schemas/OrchestrationModes"
+          },
+          "transports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Transports"
+          },
+          "intelligence_tasks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Intelligence Tasks"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version",
+          "symbols",
+          "tools",
+          "providers",
+          "orchestration_modes",
+          "transports",
+          "intelligence_tasks"
+        ],
+        "title": "CapabilitiesResponse"
+      },
+      "ChatRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryMessage"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "symbol": {
+            "type": "string",
+            "const": "9984.T",
+            "title": "Symbol",
+            "default": "9984.T"
+          },
+          "allow_expensive_tools": {
+            "type": "boolean",
+            "title": "Allow Expensive Tools",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ChatRequest"
+      },
+      "ChatResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "provider": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Provider"
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Model"
+          },
+          "tools": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tools"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "answer",
+          "provider",
+          "model",
+          "tools"
+        ],
+        "title": "ChatResponse"
+      },
+      "CodeReviewRequest": {
+        "properties": {
+          "diff": {
+            "type": "string",
+            "maxLength": 120000,
+            "minLength": 1,
+            "title": "Diff"
+          },
+          "project_context": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Context"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "diff"
+        ],
+        "title": "CodeReviewRequest"
+      },
+      "CodeReviewResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "contract_version": {
+            "type": "string",
+            "const": "v1",
+            "title": "Contract Version",
+            "default": "v1"
+          },
+          "review": {
+            "type": "string",
+            "maxLength": 12000,
+            "minLength": 1,
+            "title": "Review"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "LGTM",
+              "NEEDS_CHANGES"
+            ],
+            "title": "Verdict"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "review",
+          "verdict",
+          "provenance",
+          "warnings"
+        ],
+        "title": "CodeReviewResponse"
+      },
+      "GapHeadline": {
+        "properties": {
+          "publisher": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Publisher"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Title"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "publisher",
+          "title"
+        ],
+        "title": "GapHeadline"
+      },
+      "GapNarrativeRequest": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "const": "9984.T",
+            "title": "Symbol",
+            "default": "9984.T"
+          },
+          "gap_pct": {
+            "type": "number",
+            "title": "Gap Pct"
+          },
+          "headlines": {
+            "items": {
+              "$ref": "#/components/schemas/GapHeadline"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Headlines"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "gap_pct",
+          "headlines"
+        ],
+        "title": "GapNarrativeRequest"
+      },
+      "GapNarrativeResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "contract_version": {
+            "type": "string",
+            "const": "v1",
+            "title": "Contract Version",
+            "default": "v1"
+          },
+          "narrative": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Narrative"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "narrative",
+          "provenance",
+          "warnings"
+        ],
+        "title": "GapNarrativeResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HeadlineItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "language": {
+            "type": "string",
+            "maxLength": 16,
+            "minLength": 2,
+            "title": "Language"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "language"
+        ],
+        "title": "HeadlineItem"
+      },
+      "HeadlineScore": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Score"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "score"
+        ],
+        "title": "HeadlineScore"
+      },
+      "HeadlineSentimentRequest": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "const": "9984.T",
+            "title": "Symbol",
+            "default": "9984.T"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/HeadlineItem"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "HeadlineSentimentRequest"
+      },
+      "HeadlineSentimentResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "contract_version": {
+            "type": "string",
+            "const": "v1",
+            "title": "Contract Version",
+            "default": "v1"
+          },
+          "scores": {
+            "items": {
+              "$ref": "#/components/schemas/HeadlineScore"
+            },
+            "type": "array",
+            "title": "Scores"
+          },
+          "missing_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Missing Ids"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "scores",
+          "missing_ids",
+          "provenance",
+          "warnings"
+        ],
+        "title": "HeadlineSentimentResponse"
+      },
+      "HistoryMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Content"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "HistoryMessage"
+      },
+      "OrchestrationModes": {
+        "properties": {
+          "active": {
+            "type": "string",
+            "enum": [
+              "native",
+              "legacy"
+            ],
+            "title": "Active"
+          },
+          "available": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "native",
+                "legacy"
+              ]
+            },
+            "type": "array",
+            "title": "Available"
+          },
+          "planned": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Planned"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "active",
+          "available",
+          "planned"
+        ],
+        "title": "OrchestrationModes"
+      },
+      "Provenance": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Provider"
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Model"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider",
+          "model"
+        ],
+        "title": "Provenance"
+      },
+      "ReviewRespondRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ReviewRespondRequest"
+      },
+      "ReviewRespondResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "contract_version": {
+            "type": "string",
+            "const": "v1",
+            "title": "Contract Version",
+            "default": "v1"
+          },
+          "reply": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Reply"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "reply",
+          "provenance",
+          "warnings"
+        ],
+        "title": "ReviewRespondResponse"
+      },
+      "SentimentAnalysis": {
+        "properties": {
+          "score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Score"
+          },
+          "label": {
+            "type": "string",
+            "enum": [
+              "看涨",
+              "偏多",
+              "中性",
+              "偏空",
+              "看跌"
+            ],
+            "title": "Label"
+          },
+          "positive_factors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Positive Factors"
+          },
+          "risk_factors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Risk Factors"
+          },
+          "ja_sentiment": {
+            "type": "string",
+            "enum": [
+              "看涨",
+              "偏多",
+              "中性",
+              "偏空",
+              "看跌"
+            ],
+            "title": "Ja Sentiment"
+          },
+          "en_sentiment": {
+            "type": "string",
+            "enum": [
+              "看涨",
+              "偏多",
+              "中性",
+              "偏空",
+              "看跌"
+            ],
+            "title": "En Sentiment"
+          },
+          "source_alignment": {
+            "type": "string",
+            "enum": [
+              "一致",
+              "部分一致",
+              "分歧",
+              "信息不足"
+            ],
+            "title": "Source Alignment"
+          },
+          "article_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Article Count"
+          },
+          "analyzed_at": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Analyzed At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "score",
+          "label",
+          "positive_factors",
+          "risk_factors",
+          "ja_sentiment",
+          "en_sentiment",
+          "source_alignment",
+          "article_count",
+          "analyzed_at"
+        ],
+        "title": "SentimentAnalysis"
+      },
+      "SentimentHeadline": {
+        "properties": {
+          "language": {
+            "type": "string",
+            "maxLength": 16,
+            "minLength": 2,
+            "title": "Language"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Title"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "language",
+          "title"
+        ],
+        "title": "SentimentHeadline"
+      },
+      "SentimentSummaryRequest": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "const": "9984.T",
+            "title": "Symbol",
+            "default": "9984.T"
+          },
+          "headlines": {
+            "items": {
+              "$ref": "#/components/schemas/SentimentHeadline"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Headlines"
+          },
+          "price_context": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Price Context"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "headlines",
+          "price_context"
+        ],
+        "title": "SentimentSummaryRequest"
+      },
+      "SentimentSummaryResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "contract_version": {
+            "type": "string",
+            "const": "v1",
+            "title": "Contract Version",
+            "default": "v1"
+          },
+          "analysis": {
+            "$ref": "#/components/schemas/SentimentAnalysis"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "analysis",
+          "provenance",
+          "warnings"
+        ],
+        "title": "SentimentSummaryResponse"
+      },
+      "TranslationRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "source_language": {
+            "type": "string",
+            "maxLength": 16,
+            "minLength": 2,
+            "title": "Source Language"
+          },
+          "target_language": {
+            "type": "string",
+            "const": "zh-CN",
+            "title": "Target Language",
+            "default": "zh-CN"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text",
+          "source_language"
+        ],
+        "title": "TranslationRequest"
+      },
+      "TranslationResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "contract_version": {
+            "type": "string",
+            "const": "v1",
+            "title": "Contract Version",
+            "default": "v1"
+          },
+          "translated": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Translated"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "translated",
+          "provenance",
+          "warnings"
+        ],
+        "title": "TranslationResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WishDetails": {
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "clarifying",
+              "confirming",
+              "confirmed"
+            ],
+            "title": "Phase"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "feature",
+                  "bug",
+                  "refactor"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "urgent"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "requirements": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "minLength": 1
+                },
+                "type": "array",
+                "maxItems": 20,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirements"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "phase"
+        ],
+        "title": "WishDetails"
+      },
+      "WishInterpretationRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryMessage"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "History"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "WishInterpretationRequest"
+      },
+      "WishInterpretationResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "contract_version": {
+            "type": "string",
+            "const": "v1",
+            "title": "Contract Version",
+            "default": "v1"
+          },
+          "reply": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Reply"
+          },
+          "wish": {
+            "$ref": "#/components/schemas/WishDetails"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "reply",
+          "wish",
+          "provenance",
+          "warnings"
+        ],
+        "title": "WishInterpretationResponse"
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "name": "@quant-trade/agent-tools-pi",
+  "version": "0.3.1",
+  "description": "pi (earendil-works/pi-coding-agent) extension exposing 9 quant_trade tools: quote, kline, signals, news, sentiment, trending, backtest, benchmark, analyze.",
+  "type": "module",
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/extension.js",
+  "exports": {
+    "./extension": "./dist/extension.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "skills",
+    "README.md"
+  ],
+  "keywords": [
+    "pi",
+    "pi-package",
+    "pi-extension",
+    "quant",
+    "trading",
+    "9984",
+    "softbank",
+    "japan",
+    "mcp",
+    "claude"
+  ],
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "pi": {
+    "extensions": ["./dist/extension.js"],
+    "skills": ["./skills/agent-tools"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "^0.84.4"
+  },
+  "devDependencies": {
+    "@quant-trade/cli-bridge": "workspace:*",
+    "@earendil-works/pi-coding-agent": "0.84.4",
+    "@types/bun": "^1.4.0",
+    "typescript": "^5.4.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}

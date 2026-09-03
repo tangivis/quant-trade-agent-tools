@@ -1,0 +1,3 @@
+- insert:
+    - id: quant-trade-agent-tools
+      name: '@quant-trade/agent-tools-dsh'

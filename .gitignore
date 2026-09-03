@@ -1,0 +1,72 @@
+# === Secrets / Environment ===
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+# Twitter/X cookies (auth_token + ct0) — must never be committed
+cookies.json
+*cookies*.json
+*.cookies
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+build/
+dist/
+wheels/
+*.egg-info/
+.venv/
+
+# === Rust ===
+backend/target/
+
+# === Node / Frontend ===
+# Any node_modules/ at any depth (covers stray ones from running tools at repo root)
+node_modules/
+frontend/dist/
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# === Database ===
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# === IDE / Editor ===
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# === OS ===
+.DS_Store
+.AppleDouble
+.LSOverride
+desktop.ini
+
+# === Logs / Temp ===
+*.log
+tmp/
+.cache/
+
+# === AI Agent Tools ===
+.sisyphus/
+.claude/
+.omo/
+# pi runtime state ignored, but OpenSpec-generated skills/prompts tracked
+.pi/*
+!.pi/skills/
+!.pi/prompts/
+*.pdf
+*.PDF
