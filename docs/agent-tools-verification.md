@@ -65,6 +65,13 @@
   fail-closed validation、CLI/MCP schema，且测试检出本地策略默认参数复制。TypeScript 首轮为
   18 passed / 2 failed / 1 module error：缺共享 enum export 且 risk object 被序列化为
   `[object Object]`。最小实现及补充边界覆盖后 focused Python 48/48、TypeScript 29/29 转绿。
+- Public review blocker 首轮 focused 5/5 失败：缺少专用 legacy client method、provider 错调
+  canonical analyze、Gateway 丢弃已校验 symbol、runtime 未接收或绑定 selected symbol。最小修复后
+  同组 5/5 转绿；相关 client/Gateway/runtime/tool 回归另检出一个使用旧 protocol 的测试替身，
+  更新为 `legacy_analyze` 后转绿。
+- Review blocker 完整门禁：Python 249 passed / 1 opt-in live case skipped，TypeScript 40 passed；
+  Ruff、typecheck、pi/dsh build、Python sdist/wheel、strict OpenSpec、公开文档/发布 metadata、
+  Bandit、pip-audit 与 bun audit 全部通过。
 
 ## 自动验证
 

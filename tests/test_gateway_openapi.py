@@ -6,7 +6,6 @@ from pathlib import Path
 from agent_tools.gateway.app import create_app
 from agent_tools.gateway.config import GatewaySettings
 
-
 CONTRACT_PATH = Path(__file__).parents[1] / "openapi" / "agent-gateway-v1.json"
 REQUIRED_PRODUCT_ROUTES = {
     "/v1/analyze": "post",
@@ -19,6 +18,7 @@ REQUIRED_PRODUCT_ROUTES = {
     "/v1/interpret/wish": "post",
     "/v1/review/code": "post",
     "/v1/review/respond": "post",
+    "/v1/summarize/conversation": "post",
 }
 
 
@@ -51,6 +51,10 @@ def test_runtime_openapi_publishes_all_contract_v1_intelligence_paths() -> None:
         ),
         "/v1/review/code": ("CodeReviewRequest", "CodeReviewResponse"),
         "/v1/review/respond": ("ReviewRespondRequest", "ReviewRespondResponse"),
+        "/v1/summarize/conversation": (
+            "ConversationSummaryRequest",
+            "ConversationSummaryResponse",
+        ),
     }
     for path, (request_model, response_model) in expected.items():
         operation = schema["paths"][path]["post"]
@@ -83,6 +87,7 @@ def test_contract_v1_models_forbid_unknown_request_fields() -> None:
         "WishInterpretationRequest",
         "CodeReviewRequest",
         "ReviewRespondRequest",
+        "ConversationSummaryRequest",
     ):
         assert schema["components"]["schemas"][model_name]["additionalProperties"] is False
 
@@ -169,6 +174,8 @@ def test_snapshot_includes_exact_chat_and_capabilities_contracts() -> None:
         "ChatRequest",
         "ChatResponse",
         "OrchestrationModes",
+        "ConversationSummaryRequest",
+        "ConversationSummaryResponse",
     ):
         assert snapshot["components"]["schemas"][model_name] == runtime["components"][
             "schemas"

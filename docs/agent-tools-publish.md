@@ -36,13 +36,18 @@ uv build
 - 公共 PyPI publication 只有 `ENABLE_PYPI_PUBLISH=true` 与受保护 `PYPI_TOKEN` 同时存在时
   才运行；公共 npm publication 同理要求 `ENABLE_NPM_PUBLISH=true` 与受保护 `NPM_TOKEN`。
 - npm publish job 通过 `.npmrc.ci` 的环境变量占位符消费 token，仓库与 artifact 都不保存
-  credential 值。缺少任一 enable/credential 条件时 job 必须 skipped，不能报告 published。
+credential 值。缺少任一 enable/credential 条件时 job 必须 skipped，不能报告 published。
+
+公开 GitHub tag workflow 使用更严格的 tokenless 路径：始终验证并保留 Python/npm archive、
+创建 GitHub Release；PyPI job 只有 repository variable `ENABLE_PYPI_PUBLISH=true` 时才运行，并
+通过 `pypi` environment 的 OIDC Trusted Publisher 获取短期身份，不读取 `PYPI_TOKEN`。在 PyPI
+外部登记完成前，该变量保持 false。
 
 ## 两类独立发布状态
 
 | 状态 | 成功条件 | 是否需要 registry credential | 可声明内容 |
 |---|---|---|---|
-| Source/artifact release | tag 的全量 test 与 artifact job 成功，GitLab 保留四类 archive | 否 | tag 与可下载 artifact 已就绪 |
+| Source/artifact release | tag 的全量 test 与 artifact job 成功，CI/GitHub Release 保留四类 archive | 否 | tag 与可下载 artifact 已就绪 |
 | Public registry publication | 对应 opt-in job 成功上传已保留 artifact | 是，或未来受信发布身份 | 仅声明已成功的具体 registry/package |
 
 一个 registry 的成功或失败不改变另一个 registry 的状态，也不改变已保留 artifact 的状态。
@@ -84,7 +89,7 @@ stdio client 的最小配置：
       "args": ["quant-trade-agent-tools", "mcp"],
       "env": {
         "QUANT_TRADE_API_URL": "http://127.0.0.1:5188",
-        "QUANT_TRADE_AGENT_URL": "http://127.0.0.1:8003"
+        "QUANT_TRADE_GATEWAY_URL": "http://127.0.0.1:8010"
       }
     }
   }
@@ -99,7 +104,7 @@ MCP harness 使用自己的 GPT、Claude、DeepSeek、Kimi 或其他模型；age
 pi install npm:@quant-trade/agent-tools-pi
 ```
 
-pi adapter 注册 9 个 `quant_*` tools，通过 `uvx quant-trade-agent-tools` 调用稳定 CLI。发布前需要在干净环境完成一次安装、工具发现和真实 API 调用。
+pi adapter 注册 12 个 `quant_*` tools，通过 `uvx quant-trade-agent-tools` 调用稳定 CLI。发布前需要在干净环境完成一次安装、工具发现和真实 API 调用。
 
 当前验证并声明的 peer API 为 `@earendil-works/pi-coding-agent` 0.84.x。adapter bundle 使用 Node.js `child_process`，因此 host 运行时不再隐式依赖 Bun；开发测试和构建仍按仓库规范使用 Bun。
 
@@ -118,7 +123,7 @@ dsh plugin --profile <profile> add @quant-trade/agent-tools-dsh@experimental
 1. 固定 dsh 与 Cordis 版本。
 2. 在干净环境安装 npm package。
 3. 验证 plugin 被加载。
-4. 验证 9 个工具可发现。
+4. 验证 12 个工具可发现。
 5. 至少真实调用 `quote` 和带参数的 `kline`。
 6. 记录兼容矩阵和回退方案。
 
@@ -128,7 +133,8 @@ pi 与 dsh 的发布 bundle 都内联内部 CLI bridge，不包含 `workspace:*`
 
 - Node.js >= 22.19；
 - `uv`/`uvx`，且 `uvx quant-trade-agent-tools` 可执行；
-- 可达的 `quant_trade` HTTP API，通过 `QUANT_TRADE_API_URL`、`QUANT_TRADE_AGENT_URL` 和可选 `QUANT_TRADE_API_TOKEN` 配置。
+- 可达的产品 HTTP API 与 Intelligence Gateway，通过 `QUANT_TRADE_API_URL`、
+  `QUANT_TRADE_GATEWAY_URL`、`QUANT_TRADE_API_TOKEN` 和 `QUANT_TRADE_AGENT_TOKEN` 分别配置。
 
 Bun 只用于本仓库 TypeScript 安装、测试和构建。
 
@@ -155,9 +161,10 @@ Bun 只用于本仓库 TypeScript 安装、测试和构建。
    精确等于 `v$(uv version --short)`。
 3. 保护 `v*` tag；从已合并且门禁通过的 `main` commit 创建 `vX.Y.Z` tag。即使不配置任何
    registry credential，该 pipeline 也必须产出并保留 source artifacts。
-4. 如需公共 PyPI publication，在 protected CI context 同时设置 Python enable flag 与
-   credential；如需 npm publication，同理设置 npm enable flag 与 credential。未满足时保持
-   skipped，不重试无凭据上传。
+4. GitHub PyPI 路径先在 PyPI 登记 repository、`release.yml` 与 `pypi` environment 的 Trusted
+   Publisher，再将 repository variable `ENABLE_PYPI_PUBLISH` 设为 true；无需保存 PyPI token。
+   GitLab token fallback 与 npm publication 仍要求各自 enable flag 和 protected credential。
+   未满足时保持 skipped，不重试无凭据上传。
 5. 分别核对 artifact release、PyPI 与 npm 的实际 job 状态；只声明确实成功的状态。Python
    与 pi 使用 stable channel；dsh 在固定 host E2E 完成前只使用 `experimental` dist-tag。
 

@@ -4,51 +4,83 @@
 
 ## Objective and Git state
 
-- Objective: deliver the `0.3.1` source/artifact release-governance hotfix after a prior tag proved that
-  repository tests and public registry publication can have different outcomes.
-- Branch: `hotfix/source-release-artifacts`, created cleanly from the then-latest `origin/main`.
-- Active OpenSpec: `openspec/changes/source-release-artifacts/`.
-- Protected state: the previous feature branch was clean and synchronized before switching. No stash,
-  reset, clean, rewrite, merge, tag, public publication or deployment was performed.
+- Objective: close the two valid public review blockers, then finish protected public delivery for `0.4.0`.
+- Branch: `feature/public-review-blockers`, created from the latest internal `origin/main` after the prior
+  delivery MR was merged with an identical committed tree.
+- Active OpenSpec: `openspec/changes/public-review-blockers/`; the conversation-context and public-release
+  specs describe the already delivered parent scope.
+- The prior internal delivery is on `main`. This fix still requires its own internal MR and public PR
+  checks. No tag, registry publication or deployment is authorized by this handoff.
+- The public GitHub repository uses the package-aligned name. Sanitized `main` and
+  `feature/conversation-context-contract` histories plus public PR #1 exist without mirrored internal refs.
+- The credential-free, Node 24-native pinned-action public `verify` workflow passed on PR #1 and remains a
+  required, strict check on protected `main`. Two valid review threads blocked merge and are addressed by
+  the active fix; they must be resolved only after exact tests and CI pass.
+- Curated Pages and tag/source/PyPI OIDC delivery are being added to the same still-unmerged public-release
+  feature. GitHub Pages workflow mode, repository Homepage and the `pypi` environment exist; the Pages
+  deployment and PyPI project are not live yet.
 
-## Release contract
+## Current contract
 
-- Every valid version tag runs the full test gate, then builds and retains Python sdist/wheel plus pi and
-  dsh npm tarballs as GitLab artifacts without requiring registry credentials.
-- Source/artifact release and public PyPI/npm publication are separate states. Artifact success never
-  implies a public package exists.
-- PyPI requires its explicit enable flag and protected credential. npm independently requires its enable
-  flag and protected credential. Missing prerequisites end in a skipped public job, not a failed upload
-  or a false published claim.
-- Public jobs consume retained archives instead of rebuilding. pi stays on the stable npm tag; dsh stays
-  experimental.
-- Future OIDC/trusted publishing is preferred. No real credential, registry owner or account information
-  is stored in this repository or its artifacts.
+- Gateway chat accepts bounded recent history plus optional caller-owned summary without persistence.
+- Caller-derived summaries are JSON-encoded at user privilege; the fixed repository policy is the only
+  system message.
+- The summary producer uses forced structured output and returns the v1 provenance/warnings envelope.
+- Canonical conversation create/context/append tools call protected product REST APIs; the repository has
+  no database access.
+- Canonical analyze accepts only supported `symbol` and optional `question`, then calls native
+  `POST /v1/analyze`. The Gateway obtains authoritative facts from product HTTP APIs.
+- Product and Gateway Bearer credentials are separate. No provider key enters a harness schema or browser.
+- Gateway chat removes all conversation tools from its internal model registry; only explicit harness
+  calls can reach product conversation APIs.
+- Gateway chat binds its validated selected symbol as user-role JSON and supplies it only to symbol-scoped
+  tool calls that omit `symbol`; explicit values remain unchanged and global feeds remain unscoped.
+- Explicit legacy analysis rollback uses the dedicated product `/agent/analyze` client method and cannot
+  recurse through canonical native Gateway analyze.
 
-## TDD evidence
+## RED/GREEN evidence
 
-- CI/lifecycle RED: 3 failed / 7 passed because the baseline lacked a tag artifact job, public jobs were
-  unconditional for tags, and Bun was asked to interpret shell build scripts.
-- CI/lifecycle GREEN: 10 passed; both npm `prepublishOnly` dry-runs invoked Bash and completed without an
-  upload.
-- Version RED: Python 1 failed / 9 passed and TypeScript 1 failed while identities remained `0.3.0`.
-- Version GREEN: release metadata plus Gateway capabilities 50 passed; TypeScript version test 1 passed
-  after `0.3.1` propagation.
-- Documentation RED: public-documentation suite 1 failed / 2 passed until this MR handoff document existed
-  with the mandatory internal-only sanitized marker.
+- Acceptance RED: Python 8 failed / 44 passed for system-role context, native analyze, version, metadata
+  and lint contracts; TypeScript 3 failed / 14 passed for Pi cancellation, analyze schema and version.
+- Focused GREEN: Python 119 passed; TypeScript 27 passed after the minimal implementation.
+- Ruff baseline under the selected release rules reported 26 existing failures; the configured fixer
+  resolved the applicable import/error/modern-typing findings before the final lint gate.
+- Public-delivery RED: 4 failed / 12 passed for missing Pages/release workflows and future public metadata;
+  focused GREEN: 16 release metadata tests passed with strict OpenSpec validation.
+- Public-review RED: 5/5 focused tests failed for the missing dedicated legacy dispatch and selected-symbol
+  binding; the same 5/5 are GREEN after the minimal fix. The related suite is 70/70.
+
+## Release state
+
+- Version identity is `0.4.0`; contract version remains `v1`.
+- Public package metadata uses the public source repository and current 12-tool descriptions.
+- pi and dsh both forward cancellation. dsh remains experimental until pinned-host installation,
+  discovery and real tool-call E2E succeed.
+- Python and npm registries remain separate, opt-in publication states. Source artifacts do not imply
+  public registry availability.
+- Public tags will retain four archive classes and create GitHub Releases without registry credentials.
+  PyPI remains explicitly disabled by repository variable until an authorized account registers the OIDC
+  publisher and enables it.
+
+## Remaining delivery steps
+
+- Deliver the active fix through protected internal main, update public PR #1, resolve its two addressed
+  threads after CI, then merge under the configured zero-approval policy.
+- Register the pending PyPI Trusted Publisher for this repository, `release.yml` and `pypi` environment,
+  then enable publication only after review.
 
 ## Full verification
 
-- Python: 233 passed / 1 opt-in real-provider test skipped.
-- Bun: 39 passed / 153 assertions.
-- TypeScript typecheck, pi/dsh builds and Python sdist/wheel build passed.
-- Strict artifact audit produced two Python release archives and two npm tarballs at `0.3.1`.
-- Extracted archives contain no credential/auth file, workstation path or workspace-only runtime
-  dependency; tracked-publication scans remain value-redacted.
-
-## Delivery state
-
-- Conventional SDD, CI/lifecycle and version commits were pushed immediately to the hotfix branch.
-- Final documentation and static publication scan passed. A Ready MR targets protected `main`; its first
-  complete head pipeline succeeded without conflicts or auto-merge.
-- Do not merge, tag, publish or deploy from this handoff.
+- Python: 249 passed / 1 explicitly gated real-provider case skipped.
+- TypeScript: 40 passed; typecheck and both harness bundles passed.
+- Ruff, strict active OpenSpec, public documentation/release metadata tests, Bandit, Bun audit and resolved
+  Python dependency audit passed.
+- Python sdist/wheel and both npm dry-run packages built at `0.4.0`.
+- An isolated wheel execution returned `agent-tools 0.4.0`; public documentation and release metadata tests
+  passed 19/19.
+- GitHub release-equivalent local build produced the current sdist/wheel and two four-file npm archives;
+  SHA-256 manifest, Bun/Python dependency audits and Bandit passed.
+- Public GitHub `verify` passed all credential-free gates with no action-runtime warning; protected `main`
+  requires that check, one approving review and resolved conversations.
+- The Pages/release/OIDC delivery head passed both internal and public CI. No workflow was manually
+  dispatched and no merge, tag, package publication or Pages deployment occurred.

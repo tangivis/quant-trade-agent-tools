@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from agent_tools.tools import build_tool_registry
 
 
@@ -31,8 +33,17 @@ class FakeClient:
     def analyze(self, payload):
         return {"signal": "HOLD", "payload": payload}
 
+    def conversation_create(self, **kwargs):
+        return {"id": "thread-1", **kwargs}
 
-def test_registry_exposes_nine_canonical_tools() -> None:
+    def conversation_context(self, thread_id: str):
+        return {"id": thread_id, "messages": []}
+
+    def conversation_append(self, thread_id: str, **kwargs):
+        return {"id": thread_id, **kwargs}
+
+
+def test_registry_exposes_canonical_market_and_conversation_tools() -> None:
     registry = build_tool_registry(FakeClient())
 
     assert registry.names() == [
@@ -45,6 +56,9 @@ def test_registry_exposes_nine_canonical_tools() -> None:
         "backtest",
         "benchmark",
         "analyze",
+        "conversation_create",
+        "conversation_context",
+        "conversation_append",
     ]
 
 
@@ -59,6 +73,13 @@ def test_registry_applies_defaults_and_dispatches() -> None:
     }
 
 
+def test_analyze_rejects_unknown_symbol_before_dispatch() -> None:
+    registry = build_tool_registry(FakeClient())
+
+    with pytest.raises(ValueError, match="Unsupported symbol"):
+        registry.call("analyze", {"symbol": "7203.T"})
+
+
 def test_registry_has_no_order_execution_tool() -> None:
     registry = build_tool_registry(FakeClient())
 
@@ -69,3 +90,6 @@ def test_registry_has_no_order_execution_tool() -> None:
         "quote", "kline", "signals", "news", "sentiment", "trending"
     ])
     assert not any(read_only[name] for name in ["backtest", "benchmark", "analyze"])
+    assert read_only["conversation_context"] is True
+    assert read_only["conversation_create"] is False
+    assert read_only["conversation_append"] is False

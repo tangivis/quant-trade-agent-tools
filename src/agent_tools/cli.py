@@ -1,6 +1,6 @@
 """agent_tools CLI — Click-based command line interface.
 
-Nine canonical tool subcommands share one registry with MCP. The CLI also
+Twelve canonical tool subcommands share one registry with MCP. The CLI also
 provides `mcp` and optional standalone `chat` entry points. This module serves:
   - `uvx quant-trade-agent-tools <subcommand>` (CLI users)
   - MCP server tool definitions (re-exports same core functions)
@@ -9,10 +9,9 @@ This package is standalone: it has NO Python dependency on quant_trade
 internals. All backend access goes through HTTP to the user's quant_trade
 deployment (default: http://127.0.0.1:5188).
 
-The `analyze` subcommand calls the existing analysis pipeline via
-`POST /agent/analyze` on the configured agent service. For CI/tests,
-`--offline` returns a fixture response (does not call any HTTP endpoint
-or import quant_trade internals).
+The `analyze` subcommand calls the native Intelligence Plane Gateway via
+`POST /v1/analyze`. The Gateway collects authoritative facts from the product;
+callers cannot supply price or indicator values.
 """
 
 from __future__ import annotations
@@ -28,7 +27,6 @@ from .agent import OpenAICompatibleAgent
 from .client import SUPPORTED_INTERVALS, SUPPORTED_SYMBOLS, QuantTradeClient
 from .providers import resolve_provider
 from .tools import build_tool_registry
-
 
 # ============================================================
 # Core functions (reused by CLI subcommands and MCP server)
@@ -121,79 +119,33 @@ def run_benchmark(
 def run_analyze(
     *,
     symbol: str = "9984.T",
-    price: float = 0.0,
-    rsi: float = 50.0,
-    adx: float = 20.0,
-    regime: str = "NarrowRange",
-    news_sentiment: float = 0.0,
-    tweet_sentiment: float = 0.0,
-    tweet_count: int = 0,
-    offline: bool = False,
+    question: str | None = None,
 ) -> dict[str, Any]:
-    """analyze — 4-agent LangGraph decision via HTTP.
-
-    offline=True  → return a fixture response (no HTTP, no LLM call)
-    offline=False → POST /agent/analyze on the quant_trade backend
-    """
-    if offline:
-        return _analyze_offline_response(
-            symbol=symbol, price=price, rsi=rsi, adx=adx, regime=regime,
-            news_sentiment=news_sentiment, tweet_sentiment=tweet_sentiment,
-            tweet_count=tweet_count,
-        )
-    return _call_tool("analyze", {
-        "symbol": symbol,
-        "price": price,
-        "rsi": rsi,
-        "adx": adx,
-        "regime": regime,
-        "news_sentiment": news_sentiment,
-        "tweet_sentiment": tweet_sentiment,
-        "tweet_count": tweet_count,
-    })
+    """analyze — native layered decision support via the Gateway."""
+    return _call_tool("analyze", {"symbol": symbol, "question": question})
 
 
-def _analyze_offline_response(
+def run_conversation_create(
     *,
-    symbol: str,
-    price: float,
-    rsi: float,
-    adx: float,
-    regime: str,
-    news_sentiment: float,
-    tweet_sentiment: float,
-    tweet_count: int,
+    channel: str = "chat",
+    symbol: str = "9984.T",
+    title: str | None = None,
 ) -> dict[str, Any]:
-    """Offline fixture response for CI/tests.
+    return _call_tool(
+        "conversation_create",
+        {"channel": channel, "symbol": symbol, "title": title},
+    )
 
-    Returns the same dict shape as a real 4-agent decision, but with
-    rule-based values instead of LLM calls. This is used by:
-    - `uvx quant-trade-agent-tools analyze --offline` (manual testing)
-    - CI test suite (no backend needed)
-    """
-    avg_sentiment = (news_sentiment + tweet_sentiment) / 2
-    if regime in ("StrongUp", "WeakUp") and avg_sentiment > 0.1 and rsi < 70:
-        signal = "BUY"
-        reason = f"up trend + positive sentiment (rsi={rsi:.0f}, adx={adx:.0f})"
-    elif regime in ("StrongDown", "WeakDown") and avg_sentiment < -0.1 and rsi > 30:
-        signal = "SELL"
-        reason = f"down trend + negative sentiment (rsi={rsi:.0f}, adx={adx:.0f})"
-    else:
-        signal = "HOLD"
-        reason = "no clear signal"
-    return {
-        "symbol": symbol,
-        "signal": signal,
-        "confidence": 0.5,
-        "reason": f"[offline] {reason}",
-        "approved": signal in ("BUY", "SELL"),
-        "final_action": signal,
-        "risk_notes": "offline mode — no real analysis",
-        "trend_direction": "up" if regime in ("StrongUp", "WeakUp") else (
-            "down" if regime in ("StrongDown", "WeakDown") else "neutral"
-        ),
-        "news_summary": f"news={news_sentiment:+.2f}, tweets={tweet_sentiment:+.2f}",
-    }
+
+def run_conversation_context(thread_id: str) -> dict[str, Any]:
+    return _call_tool("conversation_context", {"thread_id": thread_id})
+
+
+def run_conversation_append(thread_id: str, *, role: str, content: str) -> dict[str, Any]:
+    return _call_tool(
+        "conversation_append",
+        {"thread_id": thread_id, "role": role, "content": content},
+    )
 
 
 # ============================================================
@@ -318,41 +270,37 @@ def benchmark(
 
 
 @main.command()
-@click.option("--symbol", default="9984.T", help="Stock symbol.")
-@click.option("--price", default=0.0, type=float, help="Current price.")
-@click.option("--rsi", default=50.0, type=float, help="RSI value.")
-@click.option("--adx", default=20.0, type=float, help="ADX value.")
-@click.option("--regime", default="NarrowRange",
-              help="Market regime (NarrowRange/WeakUp/StrongUp/WeakDown/StrongDown).")
-@click.option("--news-sentiment", default=0.0, type=float, help="News sentiment [-1, 1].")
-@click.option("--tweet-sentiment", default=0.0, type=float, help="Tweet sentiment [-1, 1].")
-@click.option("--tweet-count", default=0, type=int, help="Tweet count.")
-@click.option("--offline", is_flag=True, default=False,
-              help="Skip HTTP — return fixture response (CI/tests).")
-def analyze(
-    symbol: str,
-    price: float,
-    rsi: float,
-    adx: float,
-    regime: str,
-    news_sentiment: float,
-    tweet_sentiment: float,
-    tweet_count: int,
-    offline: bool,
-) -> None:
-    """4-agent LangGraph trading decision (via HTTP to quant_trade backend)."""
-    result = run_analyze(
-        symbol=symbol,
-        price=price,
-        rsi=rsi,
-        adx=adx,
-        regime=regime,
-        news_sentiment=news_sentiment,
-        tweet_sentiment=tweet_sentiment,
-        tweet_count=tweet_count,
-        offline=offline,
-    )
+@click.option("--symbol", type=click.Choice(SUPPORTED_SYMBOLS), default="9984.T", show_default=True)
+@click.option("--question", default=None, help="Optional analysis question.")
+def analyze(symbol: str, question: str | None) -> None:
+    """Native Gateway analysis from server-collected product facts."""
+    result = run_analyze(symbol=symbol, question=question)
     _emit(result)
+
+
+@main.command("conversation_create")
+@click.option("--channel", type=click.Choice(["chat", "wish"]), default="chat", show_default=True)
+@click.option("--symbol", type=click.Choice(SUPPORTED_SYMBOLS), default="9984.T", show_default=True)
+@click.option("--title", default=None)
+def conversation_create(channel: str, symbol: str, title: str | None) -> None:
+    """Create a product-owned conversation thread."""
+    _emit(run_conversation_create(channel=channel, symbol=symbol, title=title))
+
+
+@main.command("conversation_context")
+@click.option("--thread-id", required=True)
+def conversation_context(thread_id: str) -> None:
+    """Read summary and recent messages from a product-owned thread."""
+    _emit(run_conversation_context(thread_id))
+
+
+@main.command("conversation_append")
+@click.option("--thread-id", required=True)
+@click.option("--role", type=click.Choice(["user", "assistant"]), required=True)
+@click.option("--content", required=True)
+def conversation_append(thread_id: str, role: str, content: str) -> None:
+    """Append one message to a product-owned thread."""
+    _emit(run_conversation_append(thread_id, role=role, content=content))
 
 
 @main.command("mcp")

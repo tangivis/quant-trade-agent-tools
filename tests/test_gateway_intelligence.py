@@ -14,7 +14,6 @@ from agent_tools.gateway.intelligence import (
 )
 from agent_tools.providers import ProviderConfig
 
-
 CONFIG = ProviderConfig(
     provider="fake",
     base_url="http://model.test/v1",

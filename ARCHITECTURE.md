@@ -47,14 +47,30 @@ The Product/Data/Domain Plane calls the Intelligence Plane through versioned HTT
 Intelligence Plane publishes the OpenAPI snapshot; the product consumer pins that snapshot and runs
 compatibility tests. Requests contain only bounded contract data, never provider credentials.
 
-REST covers native analysis, chat, enrichment, translation, wish interpretation and side-effect-free
-code review/respond. Capability discovery advertises only implemented tasks.
+REST covers native analysis, chat, stateless conversation summarization, enrichment, translation, wish
+interpretation and side-effect-free code review/respond. Capability discovery advertises only implemented
+tasks.
+
+Conversation durability is deliberately outside this plane. `quant_trade` owns users, threads, messages,
+symbols, rolling summaries and retention. The Gateway accepts only bounded caller-owned context and
+discards it after each request.
+
+Gateway chat carries its validated selected symbol as user-role JSON. The runtime supplies that value
+only when a canonical symbol-scoped tool call omits `symbol`; an explicit argument is preserved and global
+news/sentiment tools remain unscoped. This prevents a second-symbol chat from silently falling back to the
+first symbol without granting caller data system-message authority.
+
+Native analysis is the default. The operator-only legacy rollback uses a separately named product client
+method for `/agent/analyze`, so it cannot recurse into the Gateway's canonical `/v1/analyze` client.
 
 ### MCP, CLI and harnesses
 
 MCP is the stable interface for model-capable harnesses. CLI is the stable interface for people,
 scripts and thin adapters. pi, dsh and future harness packages must delegate to canonical contracts and
 must not become alternate implementations of product logic or orchestration.
+
+The three conversation tools are authenticated HTTP adapters to the protected product API. They do not
+grant this repository database access and they do not turn the Gateway into a session server.
 
 ### Multi-symbol deterministic tool boundary
 
@@ -89,6 +105,8 @@ request has a single owner, bounded contract and explicit failure behavior.
 - Model output is untrusted until it passes exact structured-output validation.
 - Prompts, history, diffs and context are bounded data; embedded instructions cannot authorize tools or
   mutations.
+- User-derived conversation summaries are serialized at user privilege; only repository-owned policy may
+  occupy a model system message.
 - Browser clients never receive provider credentials or direct provider access.
 - `approved`, `LGTM` and other model classifications are advisory values, not execution authorization.
 
@@ -101,5 +119,10 @@ it must not replace errors with a fabricated neutral decision.
 Additive capabilities appear only after implementation and contract tests are green. Breaking contract
 changes require a new version and coordinated consumer migration. Durable work, shadow evaluation and
 harness stability are independent release concerns and must not be falsely advertised.
+
+Public documentation and releases are separate delivery surfaces. GitHub Pages deploys only the curated
+`site/` allowlist; it never publishes the mixed-visibility execution documents. A version tag first creates
+verified Python and harness archives plus a GitHub Release. Optional PyPI publication consumes those exact
+archives through OIDC and cannot change the source/artifact release result.
 
 See [SECURITY.md](SECURITY.md) for credential, privacy, logging and vulnerability-reporting policy.

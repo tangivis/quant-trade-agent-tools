@@ -7,7 +7,6 @@ from typing import Any, Literal
 
 import httpx
 
-
 SupportedSymbol = Literal["9984.T", "6981.T"]
 SupportedInterval = Literal["1m", "5m", "15m", "1h", "1d", "1wk"]
 
@@ -51,6 +50,7 @@ class QuantTradeClient:
         api_base_url: str | None = None,
         agent_base_url: str | None = None,
         api_token: str | None = None,
+        agent_token: str | None = None,
         timeout: float = 30.0,
         transport: httpx.BaseTransport | None = None,
     ) -> None:
@@ -62,13 +62,20 @@ class QuantTradeClient:
         ).rstrip("/")
         self.agent_base_url = (
             agent_base_url
+            or os.getenv("QUANT_TRADE_GATEWAY_URL")
             or os.getenv("QUANT_TRADE_AGENT_URL")
-            or "http://127.0.0.1:8003"
+            or "http://127.0.0.1:8010"
         ).rstrip("/")
-        token = api_token if api_token is not None else os.getenv("QUANT_TRADE_API_TOKEN", "")
-        headers = {"Authorization": f"Bearer {token}"} if token else {}
+        product_token = (
+            api_token if api_token is not None else os.getenv("QUANT_TRADE_API_TOKEN", "")
+        )
+        gateway_token = agent_token if agent_token is not None else (
+            os.getenv("QUANT_TRADE_AGENT_TOKEN")
+            or os.getenv("TRADE_AGENT_API_TOKEN", "")
+        )
+        self._api_headers = self._bearer_headers(product_token)
+        self._agent_headers = self._bearer_headers(gateway_token)
         self._client = httpx.Client(
-            headers=headers,
             timeout=timeout,
             transport=transport,
         )
@@ -204,8 +211,69 @@ class QuantTradeClient:
         payload["best_overall"] = filtered[0] if filtered else None
         return payload
 
-    def analyze(self, payload: dict[str, Any]) -> dict[str, Any]:
-        return self._post(self.agent_base_url, "/agent/analyze", payload)
+    def analyze(
+        self,
+        *,
+        symbol: str = "9984.T",
+        question: str | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {
+            "symbol": require_supported_symbol(symbol),
+            "mode": "standard",
+        }
+        if question is not None:
+            normalized_question = question.strip()
+            if not normalized_question or len(normalized_question) > 2000:
+                raise ValueError("question must contain 1 to 2000 characters")
+            body["question"] = normalized_question
+        return self._post(
+            self.agent_base_url,
+            "/v1/analyze",
+            body,
+            headers=self._agent_headers,
+        )
+
+    def legacy_analyze(self, payload: dict[str, Any]) -> dict[str, Any]:
+        """Call the product-owned legacy analysis endpoint for explicit rollback only."""
+        return self._post(self.api_base_url, "/agent/analyze", payload)
+
+    def conversation_create(
+        self,
+        *,
+        channel: str = "chat",
+        symbol: str = "9984.T",
+        title: str | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {
+            "channel": channel,
+            "symbol": require_supported_symbol(symbol),
+        }
+        if title:
+            body["title"] = title
+        return self._post(self.api_base_url, "/api/conversations", body)
+
+    def conversation_context(self, thread_id: str) -> dict[str, Any]:
+        return self._get(
+            self.api_base_url,
+            f"/api/conversations/{require_thread_id(thread_id)}/context",
+        )
+
+    def conversation_append(
+        self,
+        thread_id: str,
+        *,
+        role: str,
+        content: str,
+    ) -> dict[str, Any]:
+        if role not in {"user", "assistant"}:
+            raise ValueError(f"Unsupported conversation role: {role}")
+        if not content.strip() or len(content) > 8000:
+            raise ValueError("Conversation content must contain 1 to 8000 characters")
+        return self._post(
+            self.api_base_url,
+            f"/api/conversations/{require_thread_id(thread_id)}/messages",
+            {"role": role, "content": content.strip()},
+        )
 
     def _get(
         self,
@@ -224,7 +292,9 @@ class QuantTradeClient:
         *,
         params: dict[str, Any] | None = None,
     ) -> Any:
-        response = self._client.get(f"{base_url}{path}", params=params)
+        response = self._client.get(
+            f"{base_url}{path}", params=params, headers=self._api_headers
+        )
         return self._decode_json(response)
 
     def _post(
@@ -234,10 +304,20 @@ class QuantTradeClient:
         body: dict[str, Any],
         *,
         timeout: float | None = None,
+        headers: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         request_options = {"timeout": timeout} if timeout is not None else {}
-        response = self._client.post(f"{base_url}{path}", json=body, **request_options)
+        response = self._client.post(
+            f"{base_url}{path}",
+            json=body,
+            headers=headers if headers is not None else self._api_headers,
+            **request_options,
+        )
         return self._require_object(self._decode_json(response))
+
+    @staticmethod
+    def _bearer_headers(token: str) -> dict[str, str]:
+        return {"Authorization": f"Bearer {token}"} if token else {}
 
     @staticmethod
     def _decode_json(response: httpx.Response) -> Any:
@@ -256,6 +336,16 @@ def require_supported_symbol(symbol: str) -> SupportedSymbol:
     if symbol not in SUPPORTED_SYMBOLS:
         raise ValueError(f"Unsupported symbol: {symbol}")
     return symbol  # type: ignore[return-value]
+
+
+def require_thread_id(thread_id: str) -> str:
+    normalized = thread_id.strip()
+    if not normalized or len(normalized) > 128 or any(
+        character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+        for character in normalized
+    ):
+        raise ValueError("Invalid conversation thread id")
+    return normalized
 
 
 def require_supported_interval(interval: str) -> SupportedInterval:

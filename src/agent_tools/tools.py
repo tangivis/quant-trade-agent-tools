@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from .client import (
     BENCHMARK_STRATEGIES,
@@ -17,7 +18,6 @@ from .client import (
     require_supported_symbol,
 )
 
-
 ToolHandler = Callable[[dict[str, Any]], dict[str, Any]]
 
 TOOL_NAMES = (
@@ -30,6 +30,22 @@ TOOL_NAMES = (
     "backtest",
     "benchmark",
     "analyze",
+    "conversation_create",
+    "conversation_context",
+    "conversation_append",
+)
+
+SYMBOL_SCOPED_TOOL_NAMES = frozenset(
+    {
+        "quote",
+        "kline",
+        "signals",
+        "trending",
+        "backtest",
+        "benchmark",
+        "analyze",
+        "conversation_create",
+    }
 )
 
 
@@ -218,29 +234,58 @@ def build_tool_registry(client: QuantTradeClient) -> ToolRegistry:
         ),
         ToolSpec(
             "analyze",
-            "Run quant_trade's news-market-trading-risk analysis. Returns advice, never places an order.",
+            "Run native Gateway analysis from server-collected facts. Returns advice, never places an order.",
             _object_schema(
                 {
-                    "symbol": {"type": "string", "default": "9984.T"},
-                    "price": {"type": "number", "default": 0},
-                    "rsi": {"type": "number", "minimum": 0, "maximum": 100, "default": 50},
-                    "adx": {"type": "number", "minimum": 0, "default": 20},
-                    "regime": {"type": "string", "default": "NarrowRange"},
-                    "news_sentiment": {"type": "number", "minimum": -1, "maximum": 1, "default": 0},
-                    "tweet_sentiment": {"type": "number", "minimum": -1, "maximum": 1, "default": 0},
-                    "tweet_count": {"type": "integer", "minimum": 0, "default": 0},
+                    "symbol": _symbol_schema(),
+                    "question": {"type": "string", "minLength": 1, "maxLength": 2000},
                 }
             ),
-            lambda args: client.analyze({
-                "symbol": args.get("symbol", "9984.T"),
-                "current_price": args.get("price", 0),
-                "rsi": args.get("rsi", 50),
-                "adx": args.get("adx", 20),
-                "regime": args.get("regime", "NarrowRange"),
-                "news_sentiment": args.get("news_sentiment", 0),
-                "tweet_sentiment": args.get("tweet_sentiment", 0),
-                "tweet_count": args.get("tweet_count", 0),
-            }),
+            lambda args: client.analyze(
+                symbol=_symbol(args), question=args.get("question")
+            ),
+            read_only=False,
+        ),
+        ToolSpec(
+            "conversation_create",
+            "Create a product-owned conversation thread for shared Harness context.",
+            _object_schema(
+                {
+                    "channel": {"type": "string", "enum": ["chat", "wish"], "default": "chat"},
+                    "symbol": _symbol_schema(),
+                    "title": {"type": "string", "minLength": 1, "maxLength": 200},
+                }
+            ),
+            lambda args: client.conversation_create(
+                channel=args.get("channel", "chat"),
+                symbol=_symbol(args),
+                title=args.get("title"),
+            ),
+            read_only=False,
+        ),
+        ToolSpec(
+            "conversation_context",
+            "Read a product-owned conversation summary and recent messages.",
+            _object_schema(
+                {"thread_id": {"type": "string", "minLength": 1, "maxLength": 128}},
+                ["thread_id"],
+            ),
+            lambda args: client.conversation_context(args["thread_id"]),
+        ),
+        ToolSpec(
+            "conversation_append",
+            "Append a user or assistant message to a product-owned conversation thread.",
+            _object_schema(
+                {
+                    "thread_id": {"type": "string", "minLength": 1, "maxLength": 128},
+                    "role": {"type": "string", "enum": ["user", "assistant"]},
+                    "content": {"type": "string", "minLength": 1, "maxLength": 8000},
+                },
+                ["thread_id", "role", "content"],
+            ),
+            lambda args: client.conversation_append(
+                args["thread_id"], role=args["role"], content=args["content"]
+            ),
             read_only=False,
         ),
     ]

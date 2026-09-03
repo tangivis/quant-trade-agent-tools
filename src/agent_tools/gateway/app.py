@@ -24,14 +24,16 @@ from .models import (
     ChatResponse,
     CodeReviewRequest,
     CodeReviewResponse,
+    ConversationSummaryRequest,
+    ConversationSummaryResponse,
     GapNarrativeRequest,
     GapNarrativeResponse,
     HeadlineSentimentRequest,
     HeadlineSentimentResponse,
-    SentimentSummaryRequest,
-    SentimentSummaryResponse,
     ReviewRespondRequest,
     ReviewRespondResponse,
+    SentimentSummaryRequest,
+    SentimentSummaryResponse,
     TranslationRequest,
     TranslationResponse,
     WishInterpretationRequest,
@@ -44,7 +46,6 @@ from .services import (
     NativeAnalysisProvider,
 )
 
-
 INTELLIGENCE_TASKS = (
     "headline_sentiment",
     "bundled_sentiment",
@@ -55,6 +56,7 @@ INTELLIGENCE_TASKS = (
     "wish_interpretation",
     "code_review",
     "review_response",
+    "conversation_summary",
 )
 
 
@@ -173,7 +175,7 @@ def create_app(
         return {
             "contract_version": "v1",
             "version": __version__,
-            "symbols": ["9984.T"],
+            "symbols": ["9984.T", "6981.T"],
             "tools": list(TOOL_NAMES),
             "providers": [
                 "openai",
@@ -218,10 +220,25 @@ def create_app(
         result = await chat.run(
             message=body.message,
             history=[item.model_dump() for item in body.history],
+            context_summary=body.context_summary,
             symbol=body.symbol,
             allow_expensive_tools=body.allow_expensive_tools,
         )
         return {"request_id": request.state.request_id, **result}
+
+    @app.post(
+        "/v1/summarize/conversation",
+        response_model=ConversationSummaryResponse,
+    )
+    async def summarize_conversation(
+        request: Request,
+        body: ConversationSummaryRequest,
+    ) -> dict[str, Any]:
+        result = await intelligence.summarize_conversation(
+            previous_summary=body.previous_summary,
+            messages=[item.model_dump() for item in body.messages],
+        )
+        return _contract_v1_response(request, result)
 
     @app.post(
         "/v1/enrich/headlines/sentiment",

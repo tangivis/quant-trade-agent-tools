@@ -11,7 +11,6 @@ from agent_tools.gateway.errors import GatewayError
 from agent_tools.gateway.services import NativeAnalysisProvider
 from agent_tools.providers import ProviderConfig
 
-
 CONFIG = ProviderConfig(
     provider="deepseek",
     base_url="http://model.test/v1",

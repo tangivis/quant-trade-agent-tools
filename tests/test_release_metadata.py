@@ -5,9 +5,8 @@ import re
 import tomllib
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_RELEASE_VERSION = "0.3.1"
+EXPECTED_RELEASE_VERSION = "0.4.0"
 PUBLISHED_MANIFESTS = (
     ROOT / "package.json",
     ROOT / "packages/cli-bridge/package.json",
@@ -189,3 +188,153 @@ def test_ci_npm_auth_uses_only_the_masked_environment_variable() -> None:
     ci = (ROOT / ".gitlab-ci.yml").read_text()
     publish_jobs = ci.split("agent-tools-npm-publish-pi:", 1)[1]
     assert publish_jobs.count("NPM_CONFIG_USERCONFIG") == 2
+
+
+def test_public_packages_point_to_public_source_and_current_tool_count() -> None:
+    expected_repository = {
+        "type": "git",
+        "url": "git+https://github.com/tangivis/quant-trade-agent-tools.git",
+    }
+    for path in PUBLISHED_MANIFESTS:
+        manifest = json.loads(path.read_text())
+        assert manifest["repository"] == expected_repository
+        assert manifest["homepage"] == (
+            "https://tangivis.github.io/quant-trade-agent-tools/"
+        )
+        assert manifest["bugs"] == {
+            "url": "https://github.com/tangivis/quant-trade-agent-tools/issues"
+        }
+    for path in (
+        ROOT / "packages/agent-tools-pi/package.json",
+        ROOT / "packages/agent-tools-dsh/package.json",
+    ):
+        description = json.loads(path.read_text())["description"]
+        assert "12" in description
+        assert "9" not in description
+
+
+def test_ci_runs_python_lint_gate() -> None:
+    ci = (ROOT / ".gitlab-ci.yml").read_text()
+    assert "uv run ruff check src tests" in ci
+
+
+def test_public_pull_requests_run_credential_free_release_gates() -> None:
+    workflow = (ROOT / ".github/workflows/ci.yml").read_text()
+
+    assert "permissions:\n  contents: read" in workflow
+    assert "pull_request:" in workflow
+    assert "push:" in workflow
+    assert "RUN_REAL_PROVIDER_E2E" not in workflow
+    assert "PYPI_TOKEN" not in workflow
+    assert "NPM_TOKEN" not in workflow
+
+    required_commands = (
+        "uv sync --extra dev --locked",
+        "uv run pytest tests/ -v",
+        "uv run ruff check src tests",
+        "bun install --frozen-lockfile",
+        "bun test packages/",
+        "bun run typecheck",
+        "bun run build",
+        "uv build",
+        "npm pack --dry-run --json --workspace packages/agent-tools-pi",
+        "npm pack --dry-run --json --workspace packages/agent-tools-dsh",
+    )
+    for command in required_commands:
+        assert command in workflow
+
+    action_uses = set(re.findall(r"uses:\s+([^\s#]+)", workflow))
+    assert action_uses == {
+        "actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09",
+        "actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444",
+        "astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78",
+        "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6",
+    }
+    assert all(
+        re.fullmatch(r"[^@]+@[0-9a-f]{40}", action_use)
+        for action_use in action_uses
+    )
+
+
+def test_public_pages_deploys_only_the_curated_site() -> None:
+    workflow = (ROOT / ".github/workflows/pages.yml").read_text()
+    site = (ROOT / "site/index.html").read_text()
+
+    assert "push:" in workflow
+    assert "      - main" in workflow
+    assert "pull_request:" not in workflow
+    assert "contents: read" in workflow
+    assert "pages: write" in workflow
+    assert "id-token: write" in workflow
+    assert "path: site" in workflow
+    assert "path: docs" not in workflow
+    assert set(re.findall(r"uses:\s+([^\s#]+)", workflow)) == {
+        "actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09",
+        "actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d",
+        "actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9",
+        "actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346",
+    }
+    assert "Intelligence Plane" in site
+    assert "Product/Data/Domain Plane" in site
+    assert "PyPI publication pending" in site
+    assert "<script" not in site
+    assert "docs/handoffs" not in site
+
+
+def test_github_tag_release_retains_artifacts_and_gates_oidc_pypi() -> None:
+    workflow = (ROOT / ".github/workflows/release.yml").read_text()
+
+    assert "tags:" in workflow
+    assert '      - "v*"' in workflow
+    assert "fetch-depth: 0" in workflow
+    assert 'git fetch --no-tags origin main:refs/remotes/origin/main' in workflow
+    assert (
+        'git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/main'
+        in workflow
+    )
+    assert 'test "$GITHUB_REF_NAME" = "v$(uv version --short)"' in workflow
+    for command in (
+        "uv sync --extra dev --locked",
+        "uv run pytest tests/ -v",
+        "uv run ruff check src tests",
+        "bun install --frozen-lockfile",
+        "bun test packages/",
+        "bun run typecheck",
+        "bun run build",
+        "uv build",
+        "npm pack --workspace packages/agent-tools-pi",
+        "npm pack --workspace packages/agent-tools-dsh",
+    ):
+        assert command in workflow
+
+    assert "name: source-release-artifacts" in workflow
+    assert "dist/*.tar.gz" in workflow
+    assert "dist/*.whl" in workflow
+    assert "release-artifacts/npm/*.tgz" in workflow
+    assert "sha256sum dist/*.tar.gz dist/*.whl release-artifacts/npm/*.tgz" in workflow
+    assert "release-artifacts/SHA256SUMS" in workflow
+    assert "gh release create" in workflow
+    assert "contents: write" in workflow
+    assert "vars.ENABLE_PYPI_PUBLISH == 'true'" in workflow
+    assert "environment:\n      name: pypi" in workflow
+    assert "id-token: write" in workflow
+    assert "PYPI_TOKEN" not in workflow
+    assert "password:" not in workflow
+    assert set(re.findall(r"uses:\s+([^\s#]+)", workflow)) == {
+        "actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09",
+        "astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78",
+        "actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444",
+        "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6",
+        "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+        "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+        "pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33",
+    }
+
+
+def test_python_metadata_exposes_future_public_release_urls() -> None:
+    urls = load_pyproject()["project"]["urls"]
+    assert urls["Homepage"] == "https://tangivis.github.io/quant-trade-agent-tools/"
+    assert urls["Documentation"] == (
+        "https://tangivis.github.io/quant-trade-agent-tools/"
+    )
+    assert urls["PyPI"] == "https://pypi.org/project/quant-trade-agent-tools/"

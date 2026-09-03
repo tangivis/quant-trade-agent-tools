@@ -1,9 +1,17 @@
 {
   "name": "@quant-trade/cli-bridge",
-  "version": "0.3.1",
-  "description": "Internal shared TS module: spawnQuantCli + 9 tool schema + parse helpers. Used by both pi and dsh adapters.",
+  "version": "0.4.0",
+  "description": "Internal shared TS module: spawnQuantCli, 12-tool schema and parse helpers for pi and dsh adapters.",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tangivis/quant-trade-agent-tools.git"
+  },
+  "homepage": "https://tangivis.github.io/quant-trade-agent-tools/",
+  "bugs": {
+    "url": "https://github.com/tangivis/quant-trade-agent-tools/issues"
+  },
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",

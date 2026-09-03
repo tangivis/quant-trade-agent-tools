@@ -1,6 +1,6 @@
 # @quant-trade/agent-tools-dsh
 
-Experimental DeepSeek Harness/Cordis adapter for the 9 read-only `quant_trade` market analysis and decision-support tools.
+Experimental DeepSeek Harness/Cordis adapter for 12 `quant_trade` market, analysis and product-owned conversation tools.
 
 This package is not considered stable until it passes installation, discovery and real tool-call E2E against a pinned dsh release. See the repository root `README.md` and `docs/agent-tools-publish.md` for the compatibility gate.
 
@@ -12,7 +12,7 @@ The package follows the current native plugin shape:
 
 - `dsh.bundle.patch` installs `cordis.patch.yml` into a profile;
 - the module exports `name`, `inject = ["tools"]`, and `apply(ctx)`;
-- nine `quant_*` tools register through `ctx.tools.register()`;
+- twelve `quant_*` tools register through `ctx.tools.register()`;
 - tool cancellation is forwarded to the owned Python CLI subprocess.
 
 ```bash

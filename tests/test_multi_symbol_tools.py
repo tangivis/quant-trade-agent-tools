@@ -11,7 +11,6 @@ import agent_tools.client as client_module
 from agent_tools.client import QuantTradeClient
 from agent_tools.tools import build_tool_registry
 
-
 SYMBOLS = ["9984.T", "6981.T"]
 INTERVALS = ["1m", "5m", "15m", "1h", "1d", "1wk"]
 SYMBOL_SCOPED_TOOLS = [
@@ -214,8 +213,10 @@ class RecordingClient:
     def benchmark(self, strategy: str, top: int = 20, **kwargs: Any) -> dict[str, Any]:
         return self._record("benchmark", strategy=strategy, top=top, **kwargs)
 
-    def analyze(self, payload: dict[str, Any]) -> dict[str, Any]:
-        return self._record("analyze", payload=payload)
+    def analyze(
+        self, *, symbol: str = "9984.T", question: str | None = None
+    ) -> dict[str, Any]:
+        return self._record("analyze", symbol=symbol, question=question)
 
 
 def test_registry_exposes_exact_multi_symbol_schema_and_global_feeds() -> None:
@@ -235,6 +236,18 @@ def test_registry_exposes_exact_multi_symbol_schema_and_global_feeds() -> None:
         assert schemas[tool_name]["properties"]["risk_params"]["type"] == "object"
     assert "symbol" not in schemas["news"]["properties"]
     assert "symbol" not in schemas["sentiment"]["properties"]
+    assert set(schemas["analyze"]["properties"]) == {"symbol", "question"}
+
+
+def test_registry_dispatches_native_analysis_without_caller_facts() -> None:
+    client = RecordingClient()
+    registry = build_tool_registry(client)
+
+    registry.call("analyze", {"symbol": "6981.T", "question": "说明主要风险"})
+
+    assert client.calls == [
+        ("analyze", {"symbol": "6981.T", "question": "说明主要风险"})
+    ]
 
 
 def test_registry_dispatches_full_backtest_arguments() -> None:

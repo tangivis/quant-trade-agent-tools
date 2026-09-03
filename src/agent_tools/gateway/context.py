@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any, Callable
+from typing import Any
 
 from ..client import QuantTradeClient
 from ..tools import build_tool_registry
@@ -31,7 +32,7 @@ class ContextCollector:
         self.client_factory = client_factory
 
     async def collect(self, symbol: str) -> ContextSnapshot:
-        if symbol != "9984.T":
+        if symbol not in {"9984.T", "6981.T"}:
             raise GatewayError(
                 code="UNSUPPORTED_SYMBOL",
                 message=f"不支持的标的: {symbol}",
@@ -40,15 +41,15 @@ class ContextCollector:
         client = self.client_factory()
         registry = build_tool_registry(client)
         operations = {
-            "quote": (registry.call, ("quote",)),
+            "quote": (registry.call, ("quote", {"symbol": symbol})),
             "kline": (
                 registry.call,
-                ("kline", {"interval": "5m", "count": 100}),
+                ("kline", {"symbol": symbol, "interval": "5m", "count": 100}),
             ),
-            "signals": (registry.call, ("signals",)),
+            "signals": (registry.call, ("signals", {"symbol": symbol})),
             "news": (registry.call, ("news", {"count": 50})),
             "sentiment": (registry.call, ("sentiment",)),
-            "trending": (registry.call, ("trending",)),
+            "trending": (registry.call, ("trending", {"symbol": symbol})),
         }
         try:
             results = await asyncio.gather(

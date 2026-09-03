@@ -13,6 +13,9 @@ deterministic risk and execution policy, and any product-approved external mutat
 
 - Treat every REST, MCP and CLI input as untrusted.
 - Treat prompts embedded in history, diffs, headlines and context as data, not system instructions.
+- Never promote a caller-supplied or model-generated conversation summary to the system role.
+- Do not expose product-owned conversation tools inside the Gateway chat agent loop; harness users invoke
+  those tools explicitly under product authorization.
 - Validate model output with exact schemas, enums, length bounds and unknown-field rejection.
 - Fail explicitly on provider, transport, contract or context errors.
 - Do not convert failures into fabricated successful analysis or approval.
@@ -76,13 +79,20 @@ intent only. Any later product-approved action belongs to the Product/Data/Domai
 
 - Use the repository's locked Python and TypeScript toolchains.
 - Run tests, type checks, builds, artifact inspection and publication-safety scanning before release.
+- Public pull-request CI uses read-only repository permissions and immutable action revisions. It must not
+  receive provider or registry credentials and cannot enable opt-in live-provider or publication jobs.
+- Public tag builds retain verified archives before any registry job. PyPI publishing uses a dedicated
+  environment and OIDC short-lived identity; this repository does not require a stored PyPI token.
+- Release tags are immutable and the workflow fails unless the tagged commit is reachable from protected
+  `main` and the tag exactly matches package version metadata.
+- GitHub Pages publishes only the explicit `site/` directory, never internal handoffs or verification logs.
 - Review packaged files for local paths, credentials and workspace-only runtime dependencies.
 - Keep the default branch protected and merge through reviewed, passing pipelines.
 - Keep experimental harness adapters clearly marked until their pinned end-to-end gates pass.
 
 ## Vulnerability reporting
 
-Report suspected vulnerabilities through the maintainers' private security-reporting channel. Include a
+Report suspected vulnerabilities through the repository's private security-reporting channel. Include a
 minimal reproduction, affected version, impact and suggested mitigation when possible. Do not include
 credentials, proprietary datasets, private prompts or live exploit data in a public issue.
 

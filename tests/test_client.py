@@ -8,7 +8,7 @@ import pytest
 from agent_tools.client import QuantTradeClient
 
 
-def test_client_uses_separate_api_and_agent_bases() -> None:
+def test_client_uses_separate_api_and_gateway_bases_and_tokens() -> None:
     requests: list[httpx.Request] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -17,15 +17,31 @@ def test_client_uses_separate_api_and_agent_bases() -> None:
 
     client = QuantTradeClient(
         api_base_url="http://quant.test:5188",
-        agent_base_url="http://agent.test:8003",
+        agent_base_url="http://gateway.test:8010",
+        api_token="product-token",
+        agent_token="gateway-token",
         transport=httpx.MockTransport(handler),
     )
 
     client.quote()
-    client.analyze({"symbol": "9984.T"})
+    client.analyze(symbol="6981.T", question="关注风险")
+    client.legacy_analyze({"symbol": "6981.T", "current_price": 6884})
 
     assert str(requests[0].url) == "http://quant.test:5188/api/quote?symbol=9984.T"
-    assert str(requests[1].url) == "http://agent.test:8003/agent/analyze"
+    assert requests[0].headers["authorization"] == "Bearer product-token"
+    assert str(requests[1].url) == "http://gateway.test:8010/v1/analyze"
+    assert requests[1].headers["authorization"] == "Bearer gateway-token"
+    assert json.loads(requests[1].content) == {
+        "symbol": "6981.T",
+        "question": "关注风险",
+        "mode": "standard",
+    }
+    assert str(requests[2].url) == "http://quant.test:5188/agent/analyze"
+    assert requests[2].headers["authorization"] == "Bearer product-token"
+    assert json.loads(requests[2].content) == {
+        "symbol": "6981.T",
+        "current_price": 6884,
+    }
 
 
 def test_client_sends_bearer_token_when_configured() -> None:
@@ -158,3 +174,24 @@ def test_benchmark_rejects_strategy_not_scanned_upstream() -> None:
 
     with pytest.raises(ValueError, match="Unsupported benchmark strategy"):
         client.benchmark("vwap", 5)
+
+
+def test_conversation_client_uses_product_api_and_bearer() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(200, json={"id": "thread-1", "messages": []})
+
+    client = QuantTradeClient(
+        api_base_url="http://quant.test:5188",
+        api_token="user-token",
+        transport=httpx.MockTransport(handler),
+    )
+
+    client.conversation_context("thread-1")
+    client.conversation_append("thread-1", role="user", content="继续分析")
+
+    assert requests[0].url.path == "/api/conversations/thread-1/context"
+    assert requests[1].url.path == "/api/conversations/thread-1/messages"
+    assert requests[0].headers["authorization"] == "Bearer user-token"

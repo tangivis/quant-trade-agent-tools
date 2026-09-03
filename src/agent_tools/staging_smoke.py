@@ -13,7 +13,6 @@ from .gateway.errors import GatewayError
 from .gateway.intelligence import GatewayIntelligenceService
 from .providers import ProviderConfig, resolve_provider
 
-
 CONTRACT = "agent-gateway-v1"
 _PROVIDER_KEY_NAMES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("minimax", ("MINIMAX_API_KEY",)),

@@ -10,6 +10,10 @@ execution、agent orchestration、REST/MCP/CLI 和薄 harness adapters。独立�
 公开架构与安全策略分别见 [ARCHITECTURE.md](ARCHITECTURE.md) 和
 [SECURITY.md](SECURITY.md)。
 
+公开入口：[GitHub](https://github.com/tangivis/quant-trade-agent-tools) ·
+[Pages（合并后上线）](https://tangivis.github.io/quant-trade-agent-tools/) ·
+[PyPI（首次 Trusted Publishing 后可用）](https://pypi.org/project/quant-trade-agent-tools/)
+
 本仓库不复制 `quant_trade` 的行情、信号、回测或 LangGraph 业务实现，也不依赖它的 Python 包和数据库；所有业务数据只通过 `quant_trade` 已发布 HTTP API 获取。因此它可以独立版本化、测试、发布并安装到 pi、MCP harness 或未来平台。
 
 > 定位是行情分析与交易决策支持，不是券商执行器。没有下单、撤单或自动实盘工具。价格单位为 JPY，免费行情可能约有 15 分钟延迟。
@@ -18,9 +22,11 @@ execution、agent orchestration、REST/MCP/CLI 和薄 harness adapters。独立�
 
 | 项目 | 状态 | 说明 |
 |---|---|---|
-| 当前 release candidate | `0.3.1` | source/artifact release governance hotfix；尚未 tag、publish 或 deploy |
+| 当前 release candidate | `0.4.0` | 会话上下文、native analyze 工具边界与公开发布加固；尚未 tag、publish 或 deploy |
 | 独立 Git 仓库 | ✅ | 与 `quant_trade` 并列，拥有独立版本、CI 和发布物 |
-| Python CLI | ✅ | 9 个 canonical tools + `mcp` + `chat` + `gateway` |
+| GitHub Pages | 待当前 PR 合并 | 仅发布 allowlisted `site/`，不发布内部执行文档 |
+| PyPI | 待 Trusted Publisher | OIDC opt-in；不保存长期 PyPI token |
+| Python CLI | 可用 | 12 个 canonical tools + `mcp` + `chat` + `gateway` |
 | MCP v2 | ✅ | stdio 与 Streamable HTTP，结构化输出和副作用 annotations |
 | REST Agent Gateway | ✅ Contract v1 producer | native analysis、chat、enrichment、wish 与无副作用 code review/respond |
 | 多模型 runtime | ✅ | GPT、DeepSeek、Kimi、MiniMax、Ollama、custom |
@@ -39,9 +45,13 @@ PyPI/npm publication 是显式 opt-in：只有对应 enable flag 与受保护 cr
 dsh 即使允许 npm publication 也仍使用 experimental dist-tag。完整操作和未来
 OIDC/trusted-publishing 建议见 `docs/agent-tools-publish.md`。
 
+公开 GitHub pull request 通过仓库自带的凭据无关 CI 独立验证：锁定依赖后运行 Python/TypeScript
+测试、Ruff、类型检查、bundle、sdist/wheel 与 npm dry-run。工作流仅授予 `contents: read`，所有
+外部 action 固定到完整 commit SHA，并且不会启用真实 provider smoke 或 registry publication。
+
 ## 当前能力
 
-- 9 个 canonical tools：`quote`、`kline`、`signals`、`news`、`sentiment`、`trending`、`backtest`、`benchmark`、`analyze`。
+- 12 个 canonical tools：9 个行情/分析工具，以及 `conversation_create`、`conversation_context`、`conversation_append` 三个产品会话工具。
 - `quote/kline/signals/trending/backtest/benchmark` 使用严格的 `9984.T|6981.T` symbol
   enum；上游新闻与聚合情感仍是全局源，不伪装为按 symbol 隔离。
 - Python CLI：人类、脚本和薄适配器共用同一工具契约。
@@ -49,7 +59,7 @@ OIDC/trusted-publishing 建议见 `docs/agent-tools-publish.md`。
 - pi npm extension：注册 `quant_*` tools，已通过单元测试与构建。
 - DeepSeek Harness/Cordis adapter：使用 `apply`/`inject`、`ctx.tools.register()` 与 `dsh.bundle` patch；因尚无真实 profile E2E，仍明确标记为 experimental。
 - 可选独立 model runtime：通过 OpenAI-compatible Chat Completions 接 GPT、DeepSeek、Kimi、MiniMax、Ollama 或自定义网关。
-- 可选 REST Agent Gateway：提供稳定 v1 contract、Bearer 鉴权、request id、服务端行情上下文、native layered analysis、四类 enrichment、无状态 wish interpretation 和无副作用 code review/respond API。
+- 可选 REST Agent Gateway：提供稳定 v1 contract、Bearer 鉴权、request id、服务端行情上下文、native layered analysis、四类 enrichment、无状态 chat/wish、会话摘要和无副作用 code review/respond API。
 - SDD + TDD：仓库级规则见 `AGENTS.md`，本次规格见 `openspec/changes/standard-multi-harness-agent/`。
 
 ## 架构
@@ -63,13 +73,13 @@ scripts ──────┘                  │
 quant_trade Web UI ─> nginx ────└─> optional REST Agent Gateway
                                            ├─> canonical market tools
                                            ├─> provider-neutral native analyze
-                                           ├─> legacy /agent/analyze (explicit rollback only)
+                                           ├─> native /v1/analyze (canonical tool target)
                                            ├─> model-driven enrichment APIs
                                            ├─> stateless wish interpretation
                                            └─> stateless code review/respond
 
 quant_trade API:   QUANT_TRADE_API_URL   (默认 http://127.0.0.1:5188)
-agent analysis API: QUANT_TRADE_AGENT_URL (默认 http://127.0.0.1:8003)
+Intelligence Gateway: QUANT_TRADE_GATEWAY_URL (默认 http://127.0.0.1:8010)
 ```
 
 Harness 通常拥有自己的模型，此时只需要 MCP 或对应 adapter，不需要配置本仓库的模型。只有直接运行 `chat` 时，才需要模型 endpoint 和 key。
@@ -77,7 +87,7 @@ Harness 通常拥有自己的模型，此时只需要 MCP 或对应 adapter，�
 核心分层：
 
 1. `QuantTradeClient`：适配并规范化上游 Rust/Python HTTP API。
-2. `ToolRegistry`：定义 9 个稳定工具名、输入 schema、默认值和 dispatch。
+2. `ToolRegistry`：定义 12 个稳定工具名、输入 schema、默认值和 dispatch。
 3. CLI/MCP：面向脚本与通用 harness 的稳定协议。
 4. pi/dsh：只做注册、参数序列化和结果回传，不含交易算法。
 5. standalone agent：可选的有界 tool-calling loop，harness 自带模型时不启用。
@@ -98,7 +108,8 @@ uv run agent-tools quote
 
 ```bash
 export QUANT_TRADE_API_URL=http://127.0.0.1:5188
-export QUANT_TRADE_AGENT_URL=http://127.0.0.1:8003
+export QUANT_TRADE_GATEWAY_URL=http://127.0.0.1:8010
+export QUANT_TRADE_AGENT_TOKEN=<injected-by-secret-store>
 ```
 
 认证凭据应由部署平台的 secret store 注入，不在公开文档、shell history 或浏览器配置中展示。
@@ -118,6 +129,13 @@ OpenAI-compatible forced tool-call client。它们不读取产品数据库，也
 `/v1/review/code` 与 `/v1/review/respond` 同样复用 provider-neutral forced structured boundary。
 provider、prompt 和 schema 全部保留在本仓；产品只提交有界文本并消费结果。diff/context 被视为
 不可信数据，producer 不运行本地 coding agent、不操作仓库/GitLab/数据库，也不执行交易动作。
+
+`/v1/chat` 接受产品组合的 `context_summary`、近期 history 和已校验 symbol，但不保存会话。
+摘要与 symbol 始终以不可信 user-role 数据传入模型，不会升格为 system instruction。若模型在
+symbol-scoped 工具调用中省略 symbol，runtime 才补入该已校验值；显式参数保持不变，全局
+news/sentiment 不会被伪装成按 symbol 隔离。`/v1/summarize/conversation` 把旧摘要和有界消息压缩
+为新的简体中文摘要，同样不访问产品数据库。长期消息、用户所有权、thread/channel/symbol 由
+`quant_trade` 的 Conversation API 和 PostgreSQL 管理。
 
 ```bash
 uv sync --extra gateway
@@ -146,11 +164,13 @@ curl http://127.0.0.1:8010/health
 | `POST /v1/interpret/wish` | 无状态愿望澄清/确认；confirmed 必须从 history 重建完整 payload |
 | `POST /v1/review/code` | 评审有界 diff/context，返回 review 与 `LGTM|NEEDS_CHANGES` |
 | `POST /v1/review/respond` | 根据有界 message/context 生成无副作用 review reply |
+| `POST /v1/summarize/conversation` | 把旧摘要与有界消息压缩为新的无状态会话摘要 |
 
 `GET /v1/capabilities` 的 `intelligence_tasks` 只列出已实现能力。producer contract 固定在
 `openapi/agent-gateway-v1.json`；consumer 应固定该 snapshot 并执行 compatibility tests。
 
-`TRADE_AGENT_ORCHESTRATION_MODE` 默认是 `native`。紧急回滚可显式设为 `legacy`；`shadow`
+`TRADE_AGENT_ORCHESTRATION_MODE` 默认是 `native`。紧急回滚可显式设为 `legacy`，该路径使用
+独立的产品 legacy client method，绝不回调本 Gateway 的 native `/v1/analyze`；`shadow`
 尚未实现，配置时会启动失败，也不会出现在 capabilities 的 available/planned 中。
 `quant_trade` 当前由 Rust 定时调用 `/v1/analyze` 并自行持久化结果；本仓库仍不读产品 DB。
 wish consumer 与产品侧 GitLab issue 创建由 `quant_trade` 持有。durable worker/job 和剩余
@@ -210,7 +230,7 @@ dsh adapter 位于 `packages/agent-tools-dsh/`，通过当前 bundle/profile 安
 dsh plugin --profile <profile> add @quant-trade/agent-tools-dsh@experimental
 ```
 
-当前类型检查目标为 Cordis `4.0.x` 与 `@deepseek-ai/dsh-tools 0.1.1-rc.2`。插件使用 `ctx.tools.register()` 暴露 9 个 `quant_*` 工具并转发 harness cancellation signal；但在固定 dsh profile 完成真实加载、工具发现和调用 E2E 之前，不视为完整兼容或可上架稳定版。
+当前类型检查目标为 Cordis `4.0.x` 与 `@deepseek-ai/dsh-tools 0.1.1-rc.2`。插件使用 `ctx.tools.register()` 暴露 12 个 `quant_*` 工具并转发 harness cancellation signal；但在固定 dsh profile 完成真实加载、工具发现和调用 E2E 之前，不视为完整兼容或可上架稳定版。
 
 ## 多模型独立运行
 
@@ -230,7 +250,10 @@ store 和受控运行配置中选择 provider、model 与凭据；这些值不�
 | `trending` | `symbol=9984.T` | `GET /api/trend` | regime、ADX、DI、RSI 等趋势上下文 |
 | `backtest` | `symbol, strategy, interval, days, initial_cash?, risk_params?` | `POST /api/backtest/historical` | 原样转发 strategy ID；不在本仓解析默认参数 |
 | `benchmark` | `symbol, strategy, interval, top, initial_cash?, risk_params?` | `POST /api/backtest/benchmark` | 高成本全量扫描后按策略过滤并限制结果数 |
-| `analyze` | 价格、趋势、情感上下文 | `POST /agent/analyze` | 新闻→行情→交易→风控的 4-agent 决策 |
+| `analyze` | `symbol, question?` | `POST /v1/analyze` | Gateway 收集服务端事实并返回 layered decision support |
+| `conversation_create` | `channel, symbol, title?` | `POST /api/conversations` | 创建当前认证用户的产品会话 |
+| `conversation_context` | `thread_id` | `GET /api/conversations/:id/context` | 读取产品组合的摘要与近期消息 |
+| `conversation_append` | `thread_id, role, content` | `POST /api/conversations/:id/messages` | 追加有所有权校验的消息 |
 
 上述六个 symbol-scoped 工具只接受 `9984.T`、`6981.T`；interval 只接受
 `1m|5m|15m|1h|1d|1wk`，未知值在联网前 fail closed。`news` 与 `sentiment` 当前来自产品侧
@@ -243,7 +266,7 @@ store 和受控运行配置中选择 provider、model 与凭据；这些值不�
 并在 optimizer 实际运行期间通过重复 health/6981.T quote 稳定性检查。本仓 readiness gate 已
 满足；MR 仍必须通过自身 pipeline/review，且不会自动 merge、tag 或 deploy。
 
-MCP 将 6 个查询工具标记为只读；`backtest`、`benchmark`、`analyze` 标记为非只读但非破坏性。历史回测可能在上游保存回测记录或缓存行情，benchmark 可能运行数分钟，但所有工具都不会触发券商动作。
+MCP 将 6 个查询工具和 `conversation_context` 标记为只读；`backtest`、`benchmark`、`analyze`、`conversation_create`、`conversation_append` 标记为非只读但非破坏性。历史回测可能在上游保存回测记录或缓存行情，conversation 写工具会修改当前用户的产品会话，但所有工具都不会触发券商动作。
 
 详细参数、支持的 strategy ID、输出结构、错误语义和调用示例见 `docs/detailed-functions.md`。
 
@@ -282,7 +305,8 @@ skip。
 - `SECURITY.md`：公开的安全、隐私、凭据、日志与漏洞报告策略。
 - `docs/agent-tools-multi-platform-architecture.md`：边界、扩展点和依赖方向。
 - `docs/architecture/quant-trade-agent-gateway-integration.md`：`quant_trade` 调用独立 agent 的推荐架构与迁移决策。
-- `docs/detailed-functions.md`：9 个工具与独立 agent runtime 的详细功能说明。
+- `docs/detailed-functions.md`：12 个工具与独立 agent runtime 的详细功能说明。
+- `docs/architecture/conversation-context.md`：产品持久会话与无状态 Intelligence Plane 的边界。
 - `docs/plans/2026-09-01-agent-gateway-integration.md`：Gateway 的分阶段 SDD/TDD 实施计划。
 - `openspec/changes/contract-v1-intelligence-producer/`：四类 intelligence producer 的冻结行为与任务。
 - `docs/plans/2026-09-01-contract-v1-intelligence-producer.md`：contract v1 producer 的红绿重构顺序。

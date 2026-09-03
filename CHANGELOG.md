@@ -2,7 +2,51 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep explicit legacy analysis rollback on the product-owned `/agent/analyze` endpoint through a
+  separately named client method; it no longer calls the native, keyword-only Gateway analyze client or
+  risks recursive dispatch.
+- Bind the validated Gateway chat symbol into user-role model context and use it only as the default for
+  symbol-scoped tool calls that omit `symbol`. Explicit tool symbols remain authoritative, while global
+  news and sentiment calls remain unscoped.
+
+### Security
+
+- Keep caller-owned conversation summaries in a JSON-encoded user-role message; only the fixed repository
+  policy is sent with system authority.
+- Exclude all product-owned conversation tools from the Gateway's internal chat agent so untrusted model
+  output cannot use a server credential to read or mutate conversation records.
+
 ### Added
+
+- Credential-free public GitHub pull-request CI with immutable, Node 24-native action revisions, read-only
+  repository permission, locked installs, Python/TypeScript verification, builds and package inspection.
+- Executable workflow metadata test proving the public CI does not reference provider/PyPI/npm credentials
+  or enable the opt-in real-provider smoke path.
+- Public protected-main delivery now requires the successful, strict `verify` check in addition to review
+  and resolved conversations; the validated workflow itself remains credential-free.
+- Curated, script-free GitHub Pages content and a pinned Pages workflow that publishes only `site/`, never
+  mixed-visibility execution documents.
+- A tag-only GitHub release workflow that runs full gates, retains Python and pi/dsh archives, attaches the
+  same files plus SHA-256 checksums to a GitHub Release, and keeps PyPI publication independently opt-in.
+- Tokenless PyPI Trusted Publishing through a dedicated `pypi` environment and repository enable variable;
+  no PyPI password or API token is accepted by the public workflow.
+- Public repository delivery metadata now exposes the future Pages homepage while the OIDC publication
+  switch remains disabled until external PyPI trust registration is complete.
+- Release tags are protected against update/deletion and fail closed unless their commit is reachable from
+  protected `main` and their name exactly matches the synchronized package version.
+
+- Product-owned conversation integration: canonical `conversation_create`, `conversation_context` and
+  `conversation_append` tools across Python CLI, MCP, pi and dsh adapters without database access.
+- Stateless `POST /v1/summarize/conversation` producer and optional `context_summary` input for chat,
+  with bounded schemas, structured output, OpenAPI snapshot and compatibility tests.
+- Conversation-context OpenSpec, TDD plan and public architecture boundary documentation.
+- Dual-symbol Gateway chat/analyze contracts for `9984.T|6981.T`; context collection now forwards the
+  requested symbol to quote, kline, signals and trending tools.
+- Full verification passed: Python `246 passed / 1 skipped`, TypeScript `40 passed`, Ruff, typecheck,
+  pi/dsh bundles, Python sdist/wheel, isolated wheel execution, npm dry-runs and dependency/security audits;
+  the product cross-repository verifier accepted all boundaries.
 
 - Source/artifact release governance specification and implementation plan: tag-retained archives are
   defined independently from optional public PyPI/npm publication, without recording registry secrets
@@ -65,6 +109,15 @@
 - `Cross-Repo Contract v1`、producer OpenSpec、实施计划和跨 session handoff。
 
 ### Changed
+
+- Prepare `0.4.0` across Python, root workspace, CLI bridge, pi and dsh packages because the pre-1.0
+  canonical analyze input contract is intentionally corrected rather than reusing immutable `0.3.1`.
+- Canonical `analyze` now accepts only `symbol` and optional `question`, calls native `POST /v1/analyze`,
+  and lets the Gateway collect authoritative product facts. Product and Gateway Bearer credentials are
+  configured independently.
+- Pi now forwards host cancellation to the shared CLI subprocess, matching dsh behavior.
+- Public package metadata points to the public GitHub source repository and describes all 12 current tools.
+- CI runs the repository Ruff error/import/modern-typing rules in addition to Python tests.
 
 - Release metadata is synchronized at `0.3.1` across Python runtime/build metadata, capabilities, the
   root/bridge/pi/dsh packages and workspace locks for the source-artifact governance hotfix.

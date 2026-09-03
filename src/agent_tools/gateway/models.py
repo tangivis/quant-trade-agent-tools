@@ -6,6 +6,8 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
 
+SupportedSymbol = Literal["9984.T", "6981.T"]
+
 
 class StrictContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -13,7 +15,7 @@ class StrictContractModel(BaseModel):
 
 class AnalyzeRequest(StrictContractModel):
 
-    symbol: Literal["9984.T"] = "9984.T"
+    symbol: SupportedSymbol = "9984.T"
     question: str | None = Field(default=None, max_length=2000)
     mode: Literal["standard"] = "standard"
 
@@ -40,7 +42,7 @@ class AnalysisProvenance(StrictContractModel):
 
 class AnalyzeResponse(StrictContractModel):
     request_id: str
-    symbol: Literal["9984.T"]
+    symbol: SupportedSymbol
     as_of: str
     facts: dict[str, Any]
     analysis: AnalysisDetails
@@ -59,7 +61,8 @@ class ChatRequest(StrictContractModel):
 
     message: str = Field(min_length=1, max_length=8000)
     history: list[HistoryMessage] = Field(default_factory=list)
-    symbol: Literal["9984.T"] = "9984.T"
+    context_summary: str | None = Field(default=None, min_length=1, max_length=8000)
+    symbol: SupportedSymbol = "9984.T"
     allow_expensive_tools: bool = False
 
 
@@ -69,6 +72,19 @@ class ChatResponse(StrictContractModel):
     provider: str = Field(min_length=1, max_length=64)
     model: str = Field(min_length=1, max_length=256)
     tools: list[str]
+
+
+class ConversationSummaryRequest(StrictContractModel):
+    previous_summary: str | None = Field(default=None, min_length=1, max_length=8000)
+    messages: list[HistoryMessage] = Field(min_length=1, max_length=20)
+
+
+class ConversationSummaryResponse(StrictContractModel):
+    request_id: str
+    contract_version: Literal["v1"] = "v1"
+    summary: str = Field(min_length=1, max_length=8000)
+    provenance: Provenance
+    warnings: list[str]
 
 
 class OrchestrationModes(StrictContractModel):
@@ -153,7 +169,7 @@ class HeadlineItem(StrictContractModel):
 
 
 class HeadlineSentimentRequest(StrictContractModel):
-    symbol: Literal["9984.T"] = "9984.T"
+    symbol: SupportedSymbol = "9984.T"
     items: list[HeadlineItem] = Field(min_length=1, max_length=100)
 
     @model_validator(mode="after")
@@ -184,7 +200,7 @@ class SentimentHeadline(StrictContractModel):
 
 
 class SentimentSummaryRequest(StrictContractModel):
-    symbol: Literal["9984.T"] = "9984.T"
+    symbol: SupportedSymbol = "9984.T"
     headlines: list[SentimentHeadline] = Field(min_length=1, max_length=100)
     price_context: str = Field(min_length=1, max_length=2000)
 
@@ -219,7 +235,7 @@ class GapHeadline(StrictContractModel):
 
 
 class GapNarrativeRequest(StrictContractModel):
-    symbol: Literal["9984.T"] = "9984.T"
+    symbol: SupportedSymbol = "9984.T"
     gap_pct: float = Field(allow_inf_nan=False)
     headlines: list[GapHeadline] = Field(min_length=1, max_length=100)
 

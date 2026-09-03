@@ -7,7 +7,10 @@ export type ToolName =
   | "trending"
   | "backtest"
   | "benchmark"
-  | "analyze";
+  | "analyze"
+  | "conversation_create"
+  | "conversation_context"
+  | "conversation_append";
 
 export const TOOL_NAMES: ToolName[] = [
   "quote",
@@ -19,6 +22,9 @@ export const TOOL_NAMES: ToolName[] = [
   "backtest",
   "benchmark",
   "analyze",
+  "conversation_create",
+  "conversation_context",
+  "conversation_append",
 ];
 
 export interface ToolSchema {
@@ -144,21 +150,49 @@ export const TOOL_SCHEMAS: Record<ToolName, ToolSchema> = {
   },
   analyze: {
     name: "analyze",
-    description: "4-agent LangGraph trading decision. Use --offline only for a deterministic CI fixture.",
+    description: "Native Gateway analysis from server-collected facts.",
     inputSchema: {
       type: "object",
       properties: {
-        symbol: { type: "string", default: "9984.T" },
-        price: { type: "number", default: 0 },
-        rsi: { type: "number", default: 50 },
-        adx: { type: "number", default: 20 },
-        regime: { type: "string", default: "NarrowRange" },
-        news_sentiment: { type: "number", default: 0 },
-        tweet_sentiment: { type: "number", default: 0 },
-        tweet_count: { type: "integer", default: 0 },
-        offline: { type: "boolean", default: false },
+        symbol: symbolProperty,
+        question: { type: "string", minLength: 1, maxLength: 2000 },
       },
       required: [],
+    },
+  },
+  conversation_create: {
+    name: "conversation_create",
+    description: "Create a product-owned conversation thread shared across Harness clients.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        channel: { type: "string", enum: ["chat", "wish"], default: "chat" },
+        symbol: symbolProperty,
+        title: { type: "string", minLength: 1, maxLength: 200 },
+      },
+      required: [],
+    },
+  },
+  conversation_context: {
+    name: "conversation_context",
+    description: "Read a product-owned conversation summary and recent messages.",
+    inputSchema: {
+      type: "object",
+      properties: { thread_id: { type: "string", minLength: 1, maxLength: 128 } },
+      required: ["thread_id"],
+    },
+  },
+  conversation_append: {
+    name: "conversation_append",
+    description: "Append a message to a product-owned conversation thread.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        thread_id: { type: "string", minLength: 1, maxLength: 128 },
+        role: { type: "string", enum: ["user", "assistant"] },
+        content: { type: "string", minLength: 1, maxLength: 8000 },
+      },
+      required: ["thread_id", "role", "content"],
     },
   },
 };
