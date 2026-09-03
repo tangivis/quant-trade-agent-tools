@@ -4,19 +4,14 @@
 
 ## Objective and Git state
 
-- Objective: recover public `0.4.0` registry publication without moving its immutable tag.
-- Branch: `feature/release-workflow-recovery`, created from the latest internal `origin/main`.
-- Active OpenSpec: `openspec/changes/release-workflow-recovery/`.
-- The public tag build and retained artifacts passed. GitHub Release was restored from those checksum-
-  verified artifacts; PyPI rejected the valid OIDC token because no publisher matched its exact claims.
-- The public GitHub repository uses the package-aligned name. Sanitized `main` and
-  `feature/conversation-context-contract` histories plus public PR #1 exist without mirrored internal refs.
-- The credential-free, Node 24-native pinned-action public `verify` workflow passed on PR #1 and remains a
-  required, strict check on protected `main`. Two valid review threads blocked merge and are addressed by
-  the active fix; they must be resolved only after exact tests and CI pass.
-- Curated Pages and tag/source/PyPI OIDC delivery are being added to the same still-unmerged public-release
-  feature. GitHub Pages workflow mode, repository Homepage and the `pypi` environment exist; the Pages
-  deployment and PyPI project are not live yet.
+- Objective: record the completed public `0.4.0` source and PyPI release verification.
+- Branch: `feature/release-verification`, created from the latest internal `origin/main`.
+- Completed OpenSpec: `openspec/changes/release-workflow-recovery/`.
+- The immutable public tag, five-asset GitHub Release, Pages site and PyPI `0.4.0` project are live. The
+  tokenless publisher is active; no PyPI token was created or stored.
+- Internal and public source histories remain separate and sanitized while their reviewed main trees
+  match. Protected public main requires the strict `verify` check and resolved conversations; approval
+  count is intentionally zero under the authorized delivery policy.
 
 ## Current contract
 
@@ -61,15 +56,13 @@
   discovery and real tool-call E2E succeed.
 - Python and npm registries remain separate, opt-in publication states. Source artifacts do not imply
   public registry availability.
-- Public tags will retain four archive classes and create GitHub Releases without registry credentials.
-  PyPI remains explicitly disabled by repository variable until an authorized account registers the OIDC
-  publisher and enables it.
+- Public `v0.4.0` retains Python sdist/wheel, pi/dsh npm tarballs and checksums in its GitHub Release.
+  Python `0.4.0` is published on PyPI through OIDC. npm packages remain unpublished and dsh experimental.
 
 ## Remaining delivery steps
 
-- Deliver the recovery workflow through protected internal and public main.
-- Correct the external publisher fields, dispatch the existing `v0.4.0` tag and verify PyPI. npm remains
-  unpublished and the tag must not move.
+- None for the `0.4.0` Python/source release. npm publication and dsh stable qualification are separate,
+  future release scopes.
 
 ## Full verification
 
@@ -83,6 +76,7 @@
 - GitHub release-equivalent local build produced the current sdist/wheel and two four-file npm archives;
   SHA-256 manifest, Bun/Python dependency audits and Bandit passed.
 - Public GitHub `verify` passed all credential-free gates with no action-runtime warning; protected `main`
-  requires that check, one approving review and resolved conversations.
-- The Pages/release/OIDC delivery head passed both internal and public CI. No workflow was manually
-  dispatched and no merge, tag, package publication or Pages deployment occurred.
+  requires that check and resolved conversations with zero required approvals.
+- Recovery rebuilt the immutable `v0.4.0` tag; build, existing GitHub Release asset verification and PyPI
+  OIDC publication passed. PyPI JSON reports one non-yanked wheel and one non-yanked sdist, and a fresh
+  `uvx` environment reports `agent-tools 0.4.0`.

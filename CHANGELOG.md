@@ -23,6 +23,8 @@
 
 ### Added
 
+- Published Python `0.4.0` through tokenless PyPI Trusted Publishing and retained the Python plus pi/dsh
+  archives with checksums in the immutable GitHub Release; npm packages remain unpublished.
 - Public `0.4.0` release activation metadata for the registered PyPI Trusted Publisher, with exact Pages,
   README and publication-guide status while npm packages and dsh stability remain explicitly unclaimed.
 

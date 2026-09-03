@@ -21,3 +21,6 @@ Recover the failed public release jobs without changing the immutable tag or wea
 - GREEN: the same focused workflow test passes after the minimal implementation.
 - Full GREEN: Python 250 passed / 1 opt-in live case skipped; TypeScript 40 passed; Ruff, typecheck,
   pi/dsh builds, Python build, strict OpenSpec, Bandit and Python/Bun dependency audits passed.
+- Remote GREEN: protected internal and public changes merged after successful CI. Recovery rebuilt the
+  immutable tag, verified the existing five-asset GitHub Release and published Python `0.4.0` through
+  OIDC. PyPI JSON and a fresh-cache `uvx` invocation confirmed the version and both Python archives.

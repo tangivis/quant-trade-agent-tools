@@ -75,6 +75,17 @@
 
 ## 自动验证
 
+### Public 0.4.0 release
+
+- Protected internal/public delivery CI passed before tagging; the annotated tag remained unchanged
+  throughout recovery.
+- The tag build retained and checksum-verified Python wheel/sdist plus pi/dsh tarballs. The GitHub Release
+  exposes those four archives and `SHA256SUMS`.
+- After exact Trusted Publisher registration, the recovery run's build, GitHub Release verification and
+  PyPI OIDC job passed. Public metadata reports `0.4.0`, one non-yanked wheel and one non-yanked sdist.
+- A fresh isolated package cache installed from PyPI and returned `agent-tools 0.4.0`. npm packages remain
+  unpublished; dsh remains experimental.
+
 ```text
 uv run pytest tests/ -q
 74 passed

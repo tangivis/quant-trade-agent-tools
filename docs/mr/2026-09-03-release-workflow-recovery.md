@@ -31,5 +31,6 @@
 
 ## Recovery
 
-After external PyPI publisher fields match, dispatch `Release` with the existing tag. Verify the GitHub
-Release, PyPI JSON metadata and archives independently; do not move the tag.
+The matching publisher was registered and the existing tag was dispatched without moving it. The build,
+GitHub Release verification and PyPI job passed. PyPI exposes `0.4.0` with one wheel and one sdist, and an
+isolated `uvx` invocation reports `agent-tools 0.4.0`. npm remains unpublished.
