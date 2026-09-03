@@ -17,6 +17,8 @@
 - Correct canonical analyze to call native Gateway `/v1/analyze` with only symbol/question.
 - Forward cancellation in both pi and dsh adapters.
 - Add public source metadata, accurate 12-tool descriptions and a Python lint gate.
+- Add a credential-free public GitHub CI gate with immutable action revisions, read-only permissions and
+  no provider or registry secrets.
 
 ## Contract and security
 
@@ -33,18 +35,20 @@
 ```text
 acceptance RED: Python 8 failed / 44 passed; TypeScript 3 failed / 14 passed
 focused GREEN: Python 119 passed; TypeScript 27 passed
-full Python: 242 passed / 1 opt-in live case skipped
+full Python: 243 passed / 1 opt-in live case skipped
 full TypeScript: 40 passed
 Ruff/typecheck/build/wheel isolated smoke/npm dry-run/security audits: passed
+public CI static contract: RED missing workflow; GREEN 13 release metadata tests passed
 ```
 
 ## Rollout and rollback
 
 1. Merge only through protected internal main after pipeline and discussions pass.
 2. Bootstrap the empty public repository from a sanitized reviewed snapshot, not an internal mirror.
-3. Publish source artifacts independently from optional PyPI/npm registry jobs.
-4. Keep dsh on the experimental distribution tag.
-5. Roll back through a new protected-main MR; never rewrite an existing tag or claim skipped registry jobs
+3. Require the successful public `verify` check on protected `main` before review merge.
+4. Publish source artifacts independently from optional PyPI/npm registry jobs.
+5. Keep dsh on the experimental distribution tag.
+6. Roll back through a new protected-main MR; never rewrite an existing tag or claim skipped registry jobs
    as published.
 
 ## Known limitations

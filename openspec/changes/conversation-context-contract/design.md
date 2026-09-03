@@ -37,3 +37,6 @@ returns the layered v1 response. Product API and Gateway credentials remain sepa
 - Python lint rules covering errors, imports and modern typing execute in CI.
 - Public package metadata points only to the public GitHub repository. The `0.4.0` minor version identifies
   the corrected pre-1.0 canonical analyze contract and does not reuse the existing `v0.3.1` artifact identity.
+- Public pull-request CI installs from checked-in locks and runs the same credential-free Python and
+  TypeScript acceptance gates. External actions are pinned by commit SHA, workflow permissions are
+  read-only, and real-provider smoke and registry-publication paths remain disabled.

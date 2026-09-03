@@ -30,6 +30,9 @@
     credentials, private coordinates, local paths and workspace runtime dependencies.
 13. Deliver through a feature branch and reviewed public PR. Do not mirror internal branches or historical
     refs to the public repository.
+14. Add a failing static workflow contract, then implement a credential-free GitHub pull-request gate with
+    pinned action revisions, read-only permissions and no provider/registry secret dependency.
+15. Require the successful public check on protected `main`; do not merge, tag, publish or deploy.
 
 ## Acceptance RED evidence
 
@@ -37,10 +40,15 @@
 - The current tests explicitly expected `/agent/analyze`, the Pi adapter ignored its available
   `AbortSignal`, release tests pinned the already-tagged `0.3.1`, and package descriptions still claimed
   nine read-only tools.
+- Public-CI contract RED: `tests/test_release_metadata.py` failed because `.github/workflows/ci.yml` did
+  not exist. The minimal workflow made all 13 release-metadata tests green.
+- OpenSpec strict-validation RED: the active delta used plain requirement headers and was not parseable as
+  a change delta. Converting it to `ADDED Requirements` with level-four scenarios preserved the contract
+  and made strict validation green.
 
 ## Verification Result
 
-- Python: `242 passed, 1 skipped`
+- Python: `243 passed, 1 skipped`
 - TypeScript adapters: `40 passed`
 - Ruff, `bun run typecheck`, both adapter bundles and `uv build` passed
 - Product cross-repository verifier accepted producer routes, consumer routes and both ownership boundaries

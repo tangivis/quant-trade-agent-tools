@@ -216,3 +216,33 @@ def test_public_packages_point_to_public_source_and_current_tool_count() -> None
 def test_ci_runs_python_lint_gate() -> None:
     ci = (ROOT / ".gitlab-ci.yml").read_text()
     assert "uv run ruff check src tests" in ci
+
+
+def test_public_pull_requests_run_credential_free_release_gates() -> None:
+    workflow = (ROOT / ".github/workflows/ci.yml").read_text()
+
+    assert "permissions:\n  contents: read" in workflow
+    assert "pull_request:" in workflow
+    assert "push:" in workflow
+    assert "RUN_REAL_PROVIDER_E2E" not in workflow
+    assert "PYPI_TOKEN" not in workflow
+    assert "NPM_TOKEN" not in workflow
+
+    required_commands = (
+        "uv sync --extra dev --locked",
+        "uv run pytest tests/ -v",
+        "uv run ruff check src tests",
+        "bun install --frozen-lockfile",
+        "bun test packages/",
+        "bun run typecheck",
+        "bun run build",
+        "uv build",
+        "npm pack --dry-run --json --workspace packages/agent-tools-pi",
+        "npm pack --dry-run --json --workspace packages/agent-tools-dsh",
+    )
+    for command in required_commands:
+        assert command in workflow
+
+    action_refs = re.findall(r"uses:\s+[^@\s]+@([^\s#]+)", workflow)
+    assert len(action_refs) == 4
+    assert all(re.fullmatch(r"[0-9a-f]{40}", ref) for ref in action_refs)

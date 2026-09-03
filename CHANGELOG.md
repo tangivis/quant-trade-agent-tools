@@ -11,6 +11,11 @@
 
 ### Added
 
+- Credential-free public GitHub pull-request CI with immutable action revisions, read-only repository
+  permission, locked installs, Python/TypeScript verification, builds and package dry-run inspection.
+- Executable workflow metadata test proving the public CI does not reference provider/PyPI/npm credentials
+  or enable the opt-in real-provider smoke path.
+
 - Product-owned conversation integration: canonical `conversation_create`, `conversation_context` and
   `conversation_append` tools across Python CLI, MCP, pi and dsh adapters without database access.
 - Stateless `POST /v1/summarize/conversation` producer and optional `context_summary` input for chat,
@@ -18,7 +23,7 @@
 - Conversation-context OpenSpec, TDD plan and public architecture boundary documentation.
 - Dual-symbol Gateway chat/analyze contracts for `9984.T|6981.T`; context collection now forwards the
   requested symbol to quote, kline, signals and trending tools.
-- Full verification passed: Python `242 passed / 1 skipped`, TypeScript `40 passed`, Ruff, typecheck,
+- Full verification passed: Python `243 passed / 1 skipped`, TypeScript `40 passed`, Ruff, typecheck,
   pi/dsh bundles, Python sdist/wheel, isolated wheel execution, npm dry-runs and dependency/security audits;
   the product cross-repository verifier accepted all boundaries.
 

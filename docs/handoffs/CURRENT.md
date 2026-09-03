@@ -9,8 +9,10 @@
 - Active OpenSpec: `openspec/changes/conversation-context-contract/`.
 - The internal feature has a passing review pipeline. No merge, tag, registry publication or deployment
   is authorized by this handoff.
-- The public GitHub repository exists under the package-aligned name and is intentionally empty while a
-  sanitized, reviewed bootstrap path is prepared. Internal historical refs must not be mirrored.
+- The public GitHub repository uses the package-aligned name. Sanitized `main` and
+  `feature/conversation-context-contract` histories plus public PR #1 exist without mirrored internal refs.
+- A credential-free, pinned-action public CI workflow is under review on that PR. Merge, tag, registry
+  publication and deployment remain unauthorized.
 
 ## Current contract
 
@@ -45,13 +47,12 @@
 
 ## Remaining delivery steps
 
-- Review the complete diff and commit the acceptance slice through the existing feature MR.
-- Bootstrap public delivery without copying internal historical refs. Protect public `main` before normal
-  feature PR delivery; do not directly push normal changes to main.
+- Run the new public workflow successfully and require its `verify` check on protected `main`.
+- Obtain review before merging public PR #1. Do not merge, tag, publish or deploy from this handoff.
 
 ## Full verification
 
-- Python: 242 passed / 1 explicitly gated real-provider case skipped.
+- Python: 243 passed / 1 explicitly gated real-provider case skipped.
 - TypeScript: 40 passed; typecheck and both harness bundles passed.
 - Ruff, Bandit, Bun audit and resolved Python dependency audit passed.
 - Python sdist/wheel and both npm dry-run packages built at `0.4.0`.

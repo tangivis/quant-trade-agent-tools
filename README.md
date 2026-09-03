@@ -39,6 +39,10 @@ PyPI/npm publication 是显式 opt-in：只有对应 enable flag 与受保护 cr
 dsh 即使允许 npm publication 也仍使用 experimental dist-tag。完整操作和未来
 OIDC/trusted-publishing 建议见 `docs/agent-tools-publish.md`。
 
+公开 GitHub pull request 通过仓库自带的凭据无关 CI 独立验证：锁定依赖后运行 Python/TypeScript
+测试、Ruff、类型检查、bundle、sdist/wheel 与 npm dry-run。工作流仅授予 `contents: read`，所有
+外部 action 固定到完整 commit SHA，并且不会启用真实 provider smoke 或 registry publication。
+
 ## 当前能力
 
 - 12 个 canonical tools：9 个行情/分析工具，以及 `conversation_create`、`conversation_context`、`conversation_append` 三个产品会话工具。

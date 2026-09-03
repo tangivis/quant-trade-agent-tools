@@ -79,6 +79,8 @@ intent only. Any later product-approved action belongs to the Product/Data/Domai
 
 - Use the repository's locked Python and TypeScript toolchains.
 - Run tests, type checks, builds, artifact inspection and publication-safety scanning before release.
+- Public pull-request CI uses read-only repository permissions and immutable action revisions. It must not
+  receive provider or registry credentials and cannot enable opt-in live-provider or publication jobs.
 - Review packaged files for local paths, credentials and workspace-only runtime dependencies.
 - Keep the default branch protected and merge through reviewed, passing pipelines.
 - Keep experimental harness adapters clearly marked until their pinned end-to-end gates pass.

@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "feature/**"
+      - "hotfix/**"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
+        with:
+          enable-cache: true
+          python-version: "3.14"
+      - name: Install Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22.19.0"
+      - name: Install Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: "1.4.0"
+      - name: Install locked dependencies
+        run: |
+          uv sync --extra dev --locked
+          bun install --frozen-lockfile
+      - name: Test and lint Python
+        run: |
+          uv run pytest tests/ -v
+          uv run ruff check src tests
+      - name: Test and typecheck TypeScript
+        run: |
+          bun test packages/
+          bun run typecheck
+      - name: Build distributions
+        run: |
+          bun run build
+          uv build
+      - name: Inspect npm packages
+        run: |
+          npm pack --dry-run --json --workspace packages/agent-tools-pi
+          npm pack --dry-run --json --workspace packages/agent-tools-dsh

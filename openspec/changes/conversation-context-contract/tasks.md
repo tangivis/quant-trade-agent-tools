@@ -14,3 +14,6 @@
 - [x] Add a bounded Python lint gate and make the selected rules green.
 - [x] Refresh README, architecture, security, changelog, handoff and package documentation.
 - [x] Audit the public archives and prepare sanitized GitHub delivery without mirroring internal refs.
+- [x] Add a RED static contract test for credential-free, least-privilege public CI.
+- [x] Add pinned GitHub Actions gates for tests, lint, typecheck, builds and package inspection.
+- [ ] Run the public workflow successfully and require its check on protected `main`.

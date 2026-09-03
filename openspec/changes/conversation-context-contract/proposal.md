@@ -31,3 +31,6 @@ The current chat contract accepts recent history but has no rolling summary fiel
   the immutable `v0.3.1` tag, with public repository metadata and accurate tool counts.
 - Public delivery MUST use a sanitized public history; internal remotes, workstation paths and historical
   execution identifiers are not public release artifacts.
+- Public pull requests MUST run credential-free tests, lint, typecheck, builds and package inspection.
+  Third-party actions MUST be pinned to immutable revisions and the workflow MUST have only read access to
+  repository contents.
