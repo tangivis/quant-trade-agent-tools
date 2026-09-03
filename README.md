@@ -11,8 +11,8 @@ execution、agent orchestration、REST/MCP/CLI 和薄 harness adapters。独立�
 [SECURITY.md](SECURITY.md)。
 
 公开入口：[GitHub](https://github.com/tangivis/quant-trade-agent-tools) ·
-[Pages（合并后上线）](https://tangivis.github.io/quant-trade-agent-tools/) ·
-[PyPI（首次 Trusted Publishing 后可用）](https://pypi.org/project/quant-trade-agent-tools/)
+[Pages](https://tangivis.github.io/quant-trade-agent-tools/) ·
+[PyPI](https://pypi.org/project/quant-trade-agent-tools/)
 
 本仓库不复制 `quant_trade` 的行情、信号、回测或 LangGraph 业务实现，也不依赖它的 Python 包和数据库；所有业务数据只通过 `quant_trade` 已发布 HTTP API 获取。因此它可以独立版本化、测试、发布并安装到 pi、MCP harness 或未来平台。
 
@@ -22,10 +22,11 @@ execution、agent orchestration、REST/MCP/CLI 和薄 harness adapters。独立�
 
 | 项目 | 状态 | 说明 |
 |---|---|---|
-| 当前 release candidate | `0.4.0` | 会话上下文、native analyze 工具边界与公开发布加固；尚未 tag、publish 或 deploy |
+| 当前正式 release | `0.4.0` | 会话上下文、native analyze 工具边界与公开发布加固 |
 | 独立 Git 仓库 | ✅ | 与 `quant_trade` 并列，拥有独立版本、CI 和发布物 |
-| GitHub Pages | 待当前 PR 合并 | 仅发布 allowlisted `site/`，不发布内部执行文档 |
-| PyPI | 待 Trusted Publisher | OIDC opt-in；不保存长期 PyPI token |
+| GitHub Pages | ✅ | 仅发布 allowlisted `site/`，不发布内部执行文档 |
+| PyPI | ✅ Trusted Publishing | GitHub OIDC；不保存长期 PyPI token |
+| npm | 未发布 | pi/dsh tarball 保留在 GitHub Release；npm packages 尚未公开发布 |
 | Python CLI | 可用 | 12 个 canonical tools + `mcp` + `chat` + `gateway` |
 | MCP v2 | ✅ | stdio 与 Streamable HTTP，结构化输出和副作用 annotations |
 | REST Agent Gateway | ✅ Contract v1 producer | native analysis、chat、enrichment、wish 与无副作用 code review/respond |
@@ -40,10 +41,10 @@ execution、agent orchestration、REST/MCP/CLI 和薄 harness adapters。独立�
 通过全量门禁后，CI 总会构建并保留 Python sdist/wheel 与 pi/dsh npm tarball；这不需要 PyPI
 或 npm credential，也不表示包已发布到公共 registry。
 
-PyPI/npm publication 是显式 opt-in：只有对应 enable flag 与受保护 credential 同时存在时，
-相应 job 才消费已保留的 artifact；否则 job skipped，文档和 release 状态不得写成 published。
-dsh 即使允许 npm publication 也仍使用 experimental dist-tag。完整操作和未来
-OIDC/trusted-publishing 建议见 `docs/agent-tools-publish.md`。
+Public registry publication 是显式 opt-in：GitHub PyPI job 要求 enable flag 与匹配的 OIDC
+Trusted Publisher；GitLab fallback 和 npm jobs 仍要求各自 enable flag 与受保护 credential。
+未满足条件的 job 必须 skipped。dsh 即使允许 npm publication 也仍使用 experimental
+dist-tag。完整操作见 `docs/agent-tools-publish.md`。
 
 公开 GitHub pull request 通过仓库自带的凭据无关 CI 独立验证：锁定依赖后运行 Python/TypeScript
 测试、Ruff、类型检查、bundle、sdist/wheel 与 npm dry-run。工作流仅授予 `contents: read`，所有

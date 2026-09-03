@@ -4,13 +4,12 @@
 
 ## Objective and Git state
 
-- Objective: close the two valid public review blockers, then finish protected public delivery for `0.4.0`.
-- Branch: `feature/public-review-blockers`, created from the latest internal `origin/main` after the prior
-  delivery MR was merged with an identical committed tree.
-- Active OpenSpec: `openspec/changes/public-review-blockers/`; the conversation-context and public-release
-  specs describe the already delivered parent scope.
-- The prior internal delivery is on `main`. This fix still requires its own internal MR and public PR
-  checks. No tag, registry publication or deployment is authorized by this handoff.
+- Objective: activate the registered tokenless PyPI publisher and deliver the immutable public `0.4.0`
+  release with accurate status metadata.
+- Branch: `feature/pypi-release-activation`, created from the latest internal `origin/main`.
+- Active OpenSpec: `openspec/changes/pypi-release-activation/`.
+- The public review blockers and parent delivery are merged. The release tag remains pending until this
+  documentation delta passes protected internal and public review gates.
 - The public GitHub repository uses the package-aligned name. Sanitized `main` and
   `feature/conversation-context-contract` histories plus public PR #1 exist without mirrored internal refs.
 - The credential-free, Node 24-native pinned-action public `verify` workflow passed on PR #1 and remains a
@@ -40,6 +39,9 @@
 
 ## RED/GREEN evidence
 
+- PyPI activation RED: 2/2 focused tests failed on stale README/Pages pending status; the same tests pass
+  after the minimal public metadata update.
+
 - Acceptance RED: Python 8 failed / 44 passed for system-role context, native analyze, version, metadata
   and lint contracts; TypeScript 3 failed / 14 passed for Pi cancellation, analyze schema and version.
 - Focused GREEN: Python 119 passed; TypeScript 27 passed after the minimal implementation.
@@ -64,14 +66,13 @@
 
 ## Remaining delivery steps
 
-- Deliver the active fix through protected internal main, update public PR #1, resolve its two addressed
-  threads after CI, then merge under the configured zero-approval policy.
-- Register the pending PyPI Trusted Publisher for this repository, `release.yml` and `pypi` environment,
-  then enable publication only after review.
+- Deliver the release-status delta through protected internal and public main.
+- Enable the already registered PyPI Trusted Publisher path, create `v0.4.0` on public main, and verify
+  GitHub Release plus PyPI. npm remains unpublished.
 
 ## Full verification
 
-- Python: 249 passed / 1 explicitly gated real-provider case skipped.
+- Python: 250 passed / 1 explicitly gated real-provider case skipped.
 - TypeScript: 40 passed; typecheck and both harness bundles passed.
 - Ruff, strict active OpenSpec, public documentation/release metadata tests, Bandit, Bun audit and resolved
   Python dependency audit passed.

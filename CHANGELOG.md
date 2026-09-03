@@ -20,6 +20,9 @@
 
 ### Added
 
+- Public `0.4.0` release activation metadata for the registered PyPI Trusted Publisher, with exact Pages,
+  README and publication-guide status while npm packages and dsh stability remain explicitly unclaimed.
+
 - Credential-free public GitHub pull-request CI with immutable, Node 24-native action revisions, read-only
   repository permission, locked installs, Python/TypeScript verification, builds and package inspection.
 - Executable workflow metadata test proving the public CI does not reference provider/PyPI/npm credentials

@@ -33,22 +33,22 @@ uv build
 - dsh 若未完成目标版本 E2E，不得宣称 stable。
 - tag pipeline 无论是否配置 registry credential，都必须保留 Python sdist/wheel 与 pi/dsh
   npm tarball；保留制品成功只代表 source/artifact release。
-- 公共 PyPI publication 只有 `ENABLE_PYPI_PUBLISH=true` 与受保护 `PYPI_TOKEN` 同时存在时
+- 内部 GitLab PyPI fallback 只有 `ENABLE_PYPI_PUBLISH=true` 与受保护 `PYPI_TOKEN` 同时存在时
   才运行；公共 npm publication 同理要求 `ENABLE_NPM_PUBLISH=true` 与受保护 `NPM_TOKEN`。
 - npm publish job 通过 `.npmrc.ci` 的环境变量占位符消费 token，仓库与 artifact 都不保存
 credential 值。缺少任一 enable/credential 条件时 job 必须 skipped，不能报告 published。
 
 公开 GitHub tag workflow 使用更严格的 tokenless 路径：始终验证并保留 Python/npm archive、
 创建 GitHub Release；PyPI job 只有 repository variable `ENABLE_PYPI_PUBLISH=true` 时才运行，并
-通过 `pypi` environment 的 OIDC Trusted Publisher 获取短期身份，不读取 `PYPI_TOKEN`。在 PyPI
-外部登记完成前，该变量保持 false。
+通过 `pypi` environment 的 OIDC Trusted Publisher 获取短期身份，不读取 `PYPI_TOKEN`。Trusted
+Publisher 登记完成后才允许把该变量设为 true。
 
 ## 两类独立发布状态
 
 | 状态 | 成功条件 | 是否需要 registry credential | 可声明内容 |
 |---|---|---|---|
 | Source/artifact release | tag 的全量 test 与 artifact job 成功，CI/GitHub Release 保留四类 archive | 否 | tag 与可下载 artifact 已就绪 |
-| Public registry publication | 对应 opt-in job 成功上传已保留 artifact | 是，或未来受信发布身份 | 仅声明已成功的具体 registry/package |
+| Public registry publication | 对应 opt-in job 成功上传已保留 artifact | PyPI 使用受信身份；token fallback/npm 使用 credential | 仅声明已成功的具体 registry/package |
 
 一个 registry 的成功或失败不改变另一个 registry 的状态，也不改变已保留 artifact 的状态。
 tag pipeline 中的 `source-release-artifacts` job 会保留：

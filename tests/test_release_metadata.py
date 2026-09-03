@@ -276,7 +276,10 @@ def test_public_pages_deploys_only_the_curated_site() -> None:
     }
     assert "Intelligence Plane" in site
     assert "Product/Data/Domain Plane" in site
-    assert "PyPI publication pending" in site
+    assert "Install from PyPI" in site
+    assert "0.4.0 released" in site
+    assert "pending" not in site.lower()
+    assert "release candidate" not in site.lower()
     assert "<script" not in site
     assert "docs/handoffs" not in site
 
@@ -338,3 +341,13 @@ def test_python_metadata_exposes_future_public_release_urls() -> None:
         "https://tangivis.github.io/quant-trade-agent-tools/"
     )
     assert urls["PyPI"] == "https://pypi.org/project/quant-trade-agent-tools/"
+
+
+def test_readme_declares_the_current_public_release_without_claiming_npm() -> None:
+    readme = (ROOT / "README.md").read_text()
+
+    assert "| 当前正式 release | `0.4.0` |" in readme
+    assert "[PyPI](https://pypi.org/project/quant-trade-agent-tools/)" in readme
+    assert "待 Trusted Publisher" not in readme
+    assert "尚未 tag、publish 或 deploy" not in readme
+    assert "npm packages 尚未公开发布" in readme
