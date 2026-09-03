@@ -112,4 +112,9 @@ Additive capabilities appear only after implementation and contract tests are gr
 changes require a new version and coordinated consumer migration. Durable work, shadow evaluation and
 harness stability are independent release concerns and must not be falsely advertised.
 
+Public documentation and releases are separate delivery surfaces. GitHub Pages deploys only the curated
+`site/` allowlist; it never publishes the mixed-visibility execution documents. A version tag first creates
+verified Python and harness archives plus a GitHub Release. Optional PyPI publication consumes those exact
+archives through OIDC and cannot change the source/artifact release result.
+
 See [SECURITY.md](SECURITY.md) for credential, privacy, logging and vulnerability-reporting policy.

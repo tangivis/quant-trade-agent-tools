@@ -50,7 +50,7 @@
 
 ## Verification Result
 
-- Python: `243 passed, 1 skipped`
+- Python: `246 passed, 1 skipped`
 - TypeScript adapters: `40 passed`
 - Ruff, `bun run typecheck`, both adapter bundles and `uv build` passed
 - Product cross-repository verifier accepted producer routes, consumer routes and both ownership boundaries

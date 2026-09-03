@@ -10,6 +10,10 @@ execution、agent orchestration、REST/MCP/CLI 和薄 harness adapters。独立�
 公开架构与安全策略分别见 [ARCHITECTURE.md](ARCHITECTURE.md) 和
 [SECURITY.md](SECURITY.md)。
 
+公开入口：[GitHub](https://github.com/tangivis/quant-trade-agent-tools) ·
+[Pages（合并后上线）](https://tangivis.github.io/quant-trade-agent-tools/) ·
+[PyPI（首次 Trusted Publishing 后可用）](https://pypi.org/project/quant-trade-agent-tools/)
+
 本仓库不复制 `quant_trade` 的行情、信号、回测或 LangGraph 业务实现，也不依赖它的 Python 包和数据库；所有业务数据只通过 `quant_trade` 已发布 HTTP API 获取。因此它可以独立版本化、测试、发布并安装到 pi、MCP harness 或未来平台。
 
 > 定位是行情分析与交易决策支持，不是券商执行器。没有下单、撤单或自动实盘工具。价格单位为 JPY，免费行情可能约有 15 分钟延迟。
@@ -20,6 +24,8 @@ execution、agent orchestration、REST/MCP/CLI 和薄 harness adapters。独立�
 |---|---|---|
 | 当前 release candidate | `0.4.0` | 会话上下文、native analyze 工具边界与公开发布加固；尚未 tag、publish 或 deploy |
 | 独立 Git 仓库 | ✅ | 与 `quant_trade` 并列，拥有独立版本、CI 和发布物 |
+| GitHub Pages | 待当前 PR 合并 | 仅发布 allowlisted `site/`，不发布内部执行文档 |
+| PyPI | 待 Trusted Publisher | OIDC opt-in；不保存长期 PyPI token |
 | Python CLI | 可用 | 12 个 canonical tools + `mcp` + `chat` + `gateway` |
 | MCP v2 | ✅ | stdio 与 Streamable HTTP，结构化输出和副作用 annotations |
 | REST Agent Gateway | ✅ Contract v1 producer | native analysis、chat、enrichment、wish 与无副作用 code review/respond |

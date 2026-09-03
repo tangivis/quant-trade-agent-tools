@@ -65,7 +65,13 @@ FORBIDDEN_PATTERNS = {
         r"\b(?:sk-[A-Za-z0-9_-]{12,}|glpat-[A-Za-z0-9_-]{12,}|ghp_[A-Za-z0-9]{20,})\b"
     ),
 }
-ALLOWED_PUBLIC_URL_HOSTS = {"127.0.0.1", "docs.pytest.org", "github.com"}
+ALLOWED_PUBLIC_URL_HOSTS = {
+    "127.0.0.1",
+    "docs.pytest.org",
+    "github.com",
+    "pypi.org",
+    "tangivis.github.io",
+}
 HTTP_URL = re.compile(r"https?://[^\s)`>]+", re.IGNORECASE)
 
 
@@ -74,6 +80,7 @@ def publication_text_files() -> list[Path]:
     paths.update(ROOT.glob("docs/**/*.md"))
     paths.update(ROOT.glob("openspec/**/*.md"))
     paths.update(ROOT.glob("packages/**/README.md"))
+    paths.update(ROOT.glob("site/**/*"))
     paths.add(ROOT / "pyproject.toml")
     paths.add(ROOT / "package.json")
     paths.update(ROOT.glob("packages/*/package.json"))

@@ -81,13 +81,16 @@ intent only. Any later product-approved action belongs to the Product/Data/Domai
 - Run tests, type checks, builds, artifact inspection and publication-safety scanning before release.
 - Public pull-request CI uses read-only repository permissions and immutable action revisions. It must not
   receive provider or registry credentials and cannot enable opt-in live-provider or publication jobs.
+- Public tag builds retain verified archives before any registry job. PyPI publishing uses a dedicated
+  environment and OIDC short-lived identity; this repository does not require a stored PyPI token.
+- GitHub Pages publishes only the explicit `site/` directory, never internal handoffs or verification logs.
 - Review packaged files for local paths, credentials and workspace-only runtime dependencies.
 - Keep the default branch protected and merge through reviewed, passing pipelines.
 - Keep experimental harness adapters clearly marked until their pinned end-to-end gates pass.
 
 ## Vulnerability reporting
 
-Report suspected vulnerabilities through the maintainers' private security-reporting channel. Include a
+Report suspected vulnerabilities through the repository's private security-reporting channel. Include a
 minimal reproduction, affected version, impact and suggested mitigation when possible. Do not include
 credentials, proprietary datasets, private prompts or live exploit data in a public issue.
 

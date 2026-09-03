@@ -6,7 +6,8 @@
 
 - Objective: finish the conversation-context contract and public-release hardening for `0.4.0`.
 - Branch: `feature/conversation-context-contract`, based on the immutable `v0.3.1` main revision.
-- Active OpenSpec: `openspec/changes/conversation-context-contract/`.
+- Active OpenSpecs: `openspec/changes/conversation-context-contract/` and
+  `openspec/changes/public-github-release-delivery/`.
 - The internal feature has a passing review pipeline. No merge, tag, registry publication or deployment
   is authorized by this handoff.
 - The public GitHub repository uses the package-aligned name. Sanitized `main` and
@@ -14,6 +15,8 @@
 - The credential-free, Node 24-native pinned-action public `verify` workflow passed on PR #1 and is a
   required, strict check on protected `main`. Merge, tag, registry publication and deployment remain
   unauthorized.
+- Curated Pages and tag/source/PyPI OIDC delivery are being added to the same still-unmerged public-release
+  feature; Pages and the PyPI project are not live yet.
 
 ## Current contract
 
@@ -36,6 +39,8 @@
 - Focused GREEN: Python 119 passed; TypeScript 27 passed after the minimal implementation.
 - Ruff baseline under the selected release rules reported 26 existing failures; the configured fixer
   resolved the applicable import/error/modern-typing findings before the final lint gate.
+- Public-delivery RED: 4 failed / 12 passed for missing Pages/release workflows and future public metadata;
+  focused GREEN: 16 release metadata tests passed with strict OpenSpec validation.
 
 ## Release state
 
@@ -45,18 +50,24 @@
   discovery and real tool-call E2E succeed.
 - Python and npm registries remain separate, opt-in publication states. Source artifacts do not imply
   public registry availability.
+- Public tags will retain four archive classes and create GitHub Releases without registry credentials.
+  PyPI remains disabled until an authorized account registers the OIDC publisher and enables the variable.
 
 ## Remaining delivery steps
 
 - Obtain review before merging public PR #1. Do not merge, tag, publish or deploy from this handoff.
+- Register the pending PyPI Trusted Publisher for this repository, `release.yml` and `pypi` environment,
+  then enable publication only after review.
 
 ## Full verification
 
-- Python: 243 passed / 1 explicitly gated real-provider case skipped.
+- Python: 246 passed / 1 explicitly gated real-provider case skipped.
 - TypeScript: 40 passed; typecheck and both harness bundles passed.
 - Ruff, Bandit, Bun audit and resolved Python dependency audit passed.
 - Python sdist/wheel and both npm dry-run packages built at `0.4.0`.
 - An isolated wheel execution returned `agent-tools 0.4.0`; public documentation and release metadata tests
-  passed 15/15.
+  passed 19/19.
+- GitHub release-equivalent local build produced the current sdist/wheel and two four-file npm archives;
+  SHA-256 manifest, Bun/Python dependency audits and Bandit passed.
 - Public GitHub `verify` passed all credential-free gates with no action-runtime warning; protected `main`
   requires that check, one approving review and resolved conversations.

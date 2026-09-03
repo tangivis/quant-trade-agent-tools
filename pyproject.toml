@@ -51,10 +51,11 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/tangivis/quant-trade-agent-tools"
+Homepage = "https://tangivis.github.io/quant-trade-agent-tools/"
 Repository = "https://github.com/tangivis/quant-trade-agent-tools.git"
 Issues = "https://github.com/tangivis/quant-trade-agent-tools/issues"
-Documentation = "https://github.com/tangivis/quant-trade-agent-tools#readme"
+Documentation = "https://tangivis.github.io/quant-trade-agent-tools/"
+PyPI = "https://pypi.org/project/quant-trade-agent-tools/"
 pi = "https://github.com/earendil-works/pi"
 
 [project.scripts]

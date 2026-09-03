@@ -17,6 +17,12 @@
   or enable the opt-in real-provider smoke path.
 - Public protected-main delivery now requires the successful, strict `verify` check in addition to review
   and resolved conversations; the validated workflow itself remains credential-free.
+- Curated, script-free GitHub Pages content and a pinned Pages workflow that publishes only `site/`, never
+  mixed-visibility execution documents.
+- A tag-only GitHub release workflow that runs full gates, retains Python and pi/dsh archives, attaches the
+  same files plus SHA-256 checksums to a GitHub Release, and keeps PyPI publication independently opt-in.
+- Tokenless PyPI Trusted Publishing through a dedicated `pypi` environment and repository enable variable;
+  no PyPI password or API token is accepted by the public workflow.
 
 - Product-owned conversation integration: canonical `conversation_create`, `conversation_context` and
   `conversation_append` tools across Python CLI, MCP, pi and dsh adapters without database access.
@@ -25,7 +31,7 @@
 - Conversation-context OpenSpec, TDD plan and public architecture boundary documentation.
 - Dual-symbol Gateway chat/analyze contracts for `9984.T|6981.T`; context collection now forwards the
   requested symbol to quote, kline, signals and trending tools.
-- Full verification passed: Python `243 passed / 1 skipped`, TypeScript `40 passed`, Ruff, typecheck,
+- Full verification passed: Python `246 passed / 1 skipped`, TypeScript `40 passed`, Ruff, typecheck,
   pi/dsh bundles, Python sdist/wheel, isolated wheel execution, npm dry-runs and dependency/security audits;
   the product cross-repository verifier accepted all boundaries.
 

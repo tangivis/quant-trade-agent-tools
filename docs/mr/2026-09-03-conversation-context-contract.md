@@ -19,6 +19,8 @@
 - Add public source metadata, accurate 12-tool descriptions and a Python lint gate.
 - Add a credential-free public GitHub CI gate with immutable action revisions, read-only permissions and
   no provider or registry secrets.
+- Add a curated Pages site plus tag-retained GitHub Releases and independently gated, tokenless PyPI OIDC
+  publication.
 
 ## Contract and security
 
@@ -35,12 +37,14 @@
 ```text
 acceptance RED: Python 8 failed / 44 passed; TypeScript 3 failed / 14 passed
 focused GREEN: Python 119 passed; TypeScript 27 passed
-full Python: 243 passed / 1 opt-in live case skipped
+full Python: 246 passed / 1 opt-in live case skipped
 full TypeScript: 40 passed
 Ruff/typecheck/build/wheel isolated smoke/npm dry-run/security audits: passed
 public CI static contract: RED missing workflow and legacy Node action revisions; GREEN 13 release metadata
 tests passed
 public GitHub PR verify: passed without action-runtime warnings; protected main requires this strict check
+public delivery RED/GREEN: 4 failed / 12 passed before implementation; 16 release metadata tests passed
+release-equivalent archives/checksums and Bun/pip/Bandit audits: passed
 ```
 
 ## Rollout and rollback
@@ -49,8 +53,10 @@ public GitHub PR verify: passed without action-runtime warnings; protected main 
 2. Bootstrap the empty public repository from a sanitized reviewed snapshot, not an internal mirror.
 3. Require the successful public `verify` check on protected `main` before review merge.
 4. Publish source artifacts independently from optional PyPI/npm registry jobs.
-5. Keep dsh on the experimental distribution tag.
-6. Roll back through a new protected-main MR; never rewrite an existing tag or claim skipped registry jobs
+5. Keep GitHub PyPI publication disabled until the external Trusted Publisher registration matches
+   `release.yml` and the `pypi` environment.
+6. Keep dsh on the experimental distribution tag.
+7. Roll back through a new protected-main MR; never rewrite an existing tag or claim skipped registry jobs
    as published.
 
 ## Known limitations
