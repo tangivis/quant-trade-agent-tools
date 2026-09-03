@@ -243,6 +243,14 @@ def test_public_pull_requests_run_credential_free_release_gates() -> None:
     for command in required_commands:
         assert command in workflow
 
-    action_refs = re.findall(r"uses:\s+[^@\s]+@([^\s#]+)", workflow)
-    assert len(action_refs) == 4
-    assert all(re.fullmatch(r"[0-9a-f]{40}", ref) for ref in action_refs)
+    action_uses = set(re.findall(r"uses:\s+([^\s#]+)", workflow))
+    assert action_uses == {
+        "actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09",
+        "actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444",
+        "astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78",
+        "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6",
+    }
+    assert all(
+        re.fullmatch(r"[^@]+@[0-9a-f]{40}", action_use)
+        for action_use in action_uses
+    )

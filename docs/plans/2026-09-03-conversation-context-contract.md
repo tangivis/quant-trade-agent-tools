@@ -45,6 +45,8 @@
 - OpenSpec strict-validation RED: the active delta used plain requirement headers and was not parseable as
   a change delta. Converting it to `ADDED Requirements` with level-four scenarios preserved the contract
   and made strict validation green.
+- The first successful public run warned that three pinned legacy action majors still targeted Node 20.
+  An exact-revision RED test then required the official Node 24-native majors before the final run.
 
 ## Verification Result
 

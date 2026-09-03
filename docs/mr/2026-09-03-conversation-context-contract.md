@@ -38,7 +38,8 @@ focused GREEN: Python 119 passed; TypeScript 27 passed
 full Python: 243 passed / 1 opt-in live case skipped
 full TypeScript: 40 passed
 Ruff/typecheck/build/wheel isolated smoke/npm dry-run/security audits: passed
-public CI static contract: RED missing workflow; GREEN 13 release metadata tests passed
+public CI static contract: RED missing workflow and legacy Node action revisions; GREEN 13 release metadata
+tests passed
 ```
 
 ## Rollout and rollback

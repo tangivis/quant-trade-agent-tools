@@ -11,8 +11,8 @@
 
 ### Added
 
-- Credential-free public GitHub pull-request CI with immutable action revisions, read-only repository
-  permission, locked installs, Python/TypeScript verification, builds and package dry-run inspection.
+- Credential-free public GitHub pull-request CI with immutable, Node 24-native action revisions, read-only
+  repository permission, locked installs, Python/TypeScript verification, builds and package inspection.
 - Executable workflow metadata test proving the public CI does not reference provider/PyPI/npm credentials
   or enable the opt-in real-provider smoke path.
 
